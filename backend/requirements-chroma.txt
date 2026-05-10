@@ -2,4 +2,4 @@
 # Keep this separate so the default backend install works on Python versions
 # where tokenizers wheels are unavailable and Rust/Cargo would be required.
 -r requirements.txt
-chromadb==0.5.23
+chromadb==1.5.9
