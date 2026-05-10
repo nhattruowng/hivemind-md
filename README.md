@@ -173,4 +173,4 @@ Xem [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-MIT. Xem [LICENSE](LICENSE).
+Apache-2.0. Xem [LICENSE](LICENSE).
