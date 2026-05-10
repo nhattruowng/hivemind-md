@@ -1,0 +1,41 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: hivemind-md-backend
+    environment:
+      APP_NAME: ${APP_NAME:-HiveMind MD}
+      BACKEND_HOST: 0.0.0.0
+      BACKEND_PORT: 8000
+      OLLAMA_BASE_URL: ${OLLAMA_DOCKER_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_MAIN_MODEL: ${OLLAMA_MAIN_MODEL:-qwen2.5:7b}
+      OLLAMA_LIGHT_MODEL: ${OLLAMA_LIGHT_MODEL:-qwen2.5:3b}
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-nomic-embed-text}
+      DATABASE_URL: sqlite:///./data/hivemind.db
+      KNOWLEDGE_DIR: ./knowledge
+      VECTOR_STORE_DIR: ./vector_store
+      DEFAULT_SEARCH_LIMIT: ${DEFAULT_SEARCH_LIMIT:-5}
+      DEFAULT_CHUNK_SIZE: ${DEFAULT_CHUNK_SIZE:-800}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/knowledge:/app/knowledge
+      - ./backend/vector_store:/app/vector_store
+      - hivemind_sqlite:/app/data
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: hivemind-md-frontend
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  hivemind_sqlite:
+

@@ -1,0 +1,1326 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HiveMind MD - Tài liệu mô hình xử lý Agent</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --surface: #ffffff;
+      --surface-soft: #eef5f2;
+      --ink: #15202b;
+      --muted: #5d6b7a;
+      --line: #d8e0e8;
+      --accent: #1f7a8c;
+      --accent-2: #2f855a;
+      --accent-3: #8a5a14;
+      --danger: #ad343e;
+      --code-bg: #111827;
+      --code-ink: #e5edf7;
+      --shadow: 0 18px 50px rgba(28, 42, 57, 0.10);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      border-right: 1px solid var(--line);
+      background: #101923;
+      color: #dce7f3;
+      padding: 24px 20px;
+    }
+
+    .brand {
+      display: grid;
+      gap: 8px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      margin-bottom: 18px;
+    }
+
+    .brand strong {
+      font-size: 18px;
+      letter-spacing: 0;
+      color: #ffffff;
+    }
+
+    .brand span {
+      font-size: 13px;
+      color: #a9bbcc;
+    }
+
+    .toc {
+      display: grid;
+      gap: 5px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .toc a {
+      display: block;
+      border-radius: 6px;
+      color: #dce7f3;
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+
+    .toc a:hover {
+      background: rgba(255, 255, 255, 0.08);
+      text-decoration: none;
+    }
+
+    main {
+      min-width: 0;
+    }
+
+    .hero {
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(140deg, rgba(31, 122, 140, 0.16), rgba(47, 133, 90, 0.08) 46%, rgba(255, 255, 255, 0.6)),
+        var(--surface);
+      padding: 48px clamp(22px, 4vw, 58px) 38px;
+    }
+
+    .hero-inner {
+      max-width: 1180px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(31, 122, 140, 0.25);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--accent);
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1,
+    h2,
+    h3 {
+      line-height: 1.2;
+      letter-spacing: 0;
+      color: #102033;
+    }
+
+    h1 {
+      max-width: 980px;
+      margin: 20px 0 14px;
+      font-size: clamp(34px, 5vw, 58px);
+    }
+
+    h2 {
+      margin: 0 0 18px;
+      font-size: clamp(24px, 3vw, 34px);
+    }
+
+    h3 {
+      margin: 28px 0 12px;
+      font-size: 20px;
+    }
+
+    p {
+      margin: 0 0 14px;
+    }
+
+    .hero p {
+      max-width: 940px;
+      color: #304255;
+      font-size: 18px;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface);
+      color: #314457;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .content {
+      max-width: 1180px;
+      padding: 34px clamp(22px, 4vw, 58px) 72px;
+    }
+
+    section {
+      margin: 0 0 34px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      padding: clamp(20px, 3vw, 32px);
+    }
+
+    .section-soft {
+      background: linear-gradient(180deg, #ffffff, #f7fbfa);
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .mini-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+      padding: 16px;
+    }
+
+    .mini-card h3 {
+      margin-top: 0;
+      font-size: 17px;
+    }
+
+    .mini-card p:last-child,
+    .mini-card ul:last-child {
+      margin-bottom: 0;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      background: #eef8fa;
+      padding: 14px 16px;
+      color: #274152;
+    }
+
+    .callout.warning {
+      border-left-color: var(--accent-3);
+      background: #fff6e7;
+    }
+
+    .callout.danger {
+      border-left-color: var(--danger);
+      background: #fff1f3;
+    }
+
+    .flow {
+      display: grid;
+      gap: 10px;
+      margin: 18px 0;
+    }
+
+    .flow-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .step {
+      position: relative;
+      min-height: 88px;
+      border: 1px solid #cbd9e4;
+      border-radius: var(--radius);
+      background: #ffffff;
+      padding: 14px;
+    }
+
+    .step strong {
+      display: block;
+      color: #102033;
+      margin-bottom: 4px;
+    }
+
+    .step span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .step.primary {
+      border-color: rgba(31, 122, 140, 0.35);
+      background: #eef8fa;
+    }
+
+    .step.green {
+      border-color: rgba(47, 133, 90, 0.35);
+      background: #eef8f2;
+    }
+
+    .step.orange {
+      border-color: rgba(138, 90, 20, 0.35);
+      background: #fff8ea;
+    }
+
+    .arrow {
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      font-weight: 800;
+      min-height: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 4px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--line);
+      padding: 12px 13px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #edf3f8;
+      color: #26384a;
+      font-weight: 750;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    code {
+      border-radius: 5px;
+      background: #eef2f6;
+      color: #182b3f;
+      padding: 2px 5px;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.92em;
+    }
+
+    pre {
+      overflow: auto;
+      border-radius: var(--radius);
+      background: var(--code-bg);
+      color: var(--code-ink);
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    ul,
+    ol {
+      margin-top: 8px;
+      padding-left: 22px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      background: #e8f3f5;
+      color: #155d6c;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .tag.green {
+      background: #e8f5ee;
+      color: #236448;
+    }
+
+    .tag.orange {
+      background: #fff2da;
+      color: #7a4b08;
+    }
+
+    .tag.red {
+      background: #ffe8ed;
+      color: #8f1f2d;
+    }
+
+    details {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fbfdff;
+      padding: 12px 14px;
+      margin-top: 12px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 750;
+      color: #17324b;
+    }
+
+    .file-map {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .file-row {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      padding: 9px 0;
+    }
+
+    .file-row:last-child {
+      border-bottom: 0;
+    }
+
+    .file-row code {
+      width: fit-content;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 26px;
+    }
+
+    @media (max-width: 980px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        position: relative;
+        height: auto;
+      }
+
+      .toc {
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      }
+
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .file-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside>
+      <div class="brand">
+        <strong>HiveMind MD</strong>
+        <span>Tài liệu mô hình xử lý agent, flow vận hành và logic backend/frontend.</span>
+      </div>
+      <nav aria-label="Mục lục">
+        <ul class="toc">
+          <li><a href="#overview">Tổng quan</a></li>
+          <li><a href="#architecture">Kiến trúc</a></li>
+          <li><a href="#agent-contract">Hợp đồng Agent</a></li>
+          <li><a href="#build-flow">Flow Build Knowledge</a></li>
+          <li><a href="#chat-flow">Flow Chat/RAG</a></li>
+          <li><a href="#refresh-flow">Flow Refresh Knowledge</a></li>
+          <li><a href="#framework-flow">Agent Framework</a></li>
+          <li><a href="#self-improvement">Self-Improvement</a></li>
+          <li><a href="#storage">Lưu trữ dữ liệu</a></li>
+          <li><a href="#api">API map</a></li>
+          <li><a href="#frontend">Frontend</a></li>
+          <li><a href="#fallbacks">Fallback & an toàn</a></li>
+          <li><a href="#operations">Vận hành</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main>
+      <header class="hero">
+        <div class="hero-inner">
+          <span class="eyebrow">Local-first multi-agent knowledge system</span>
+          <h1>Tài liệu chi tiết mô hình xử lý Agent của HiveMind MD</h1>
+          <p>
+            Tài liệu này mô tả cách dự án biến một chủ đề hoặc câu hỏi thành knowledge base Markdown,
+            index vector, trả lời bằng RAG, tự làm mới dữ liệu khi thiếu tri thức và ghi nhận vòng tự cải thiện.
+          </p>
+          <div class="meta-row">
+            <span class="pill">Backend: FastAPI, SQLite, Ollama, ChromaDB/JSON fallback</span>
+            <span class="pill">Frontend: React, TypeScript, Vite, TailwindCSS</span>
+            <span class="pill">Ngày tài liệu: 2026-05-10</span>
+            <span class="pill">Nguồn đọc: code trong workspace</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="content">
+        <section id="overview" class="section-soft">
+          <h2>Tổng quan dự án</h2>
+          <p class="lead">
+            HiveMind MD là hệ thống local-first dùng nhiều agent nhẹ để thu thập, chuẩn hóa, rút trích,
+            kiểm định, ghi Markdown và index tri thức. Trọng tâm của dự án không phải fine-tune model,
+            mà là orchestration, RAG, memory và audit trail có thể kiểm soát.
+          </p>
+          <div class="grid grid-3">
+            <div class="mini-card">
+              <h3>Mục tiêu chính</h3>
+              <p>Nhận một chủ đề hoặc câu hỏi, tạo kho tri thức Markdown có metadata, nguồn tham khảo và vector chunks để hỏi đáp lại.</p>
+            </div>
+            <div class="mini-card">
+              <h3>Phong cách vận hành</h3>
+              <p>Ưu tiên chạy local với Ollama, SQLite và file Markdown. Nếu thiếu Ollama hoặc ChromaDB, hệ thống có fallback để vẫn hoạt động.</p>
+            </div>
+            <div class="mini-card">
+              <h3>Điểm nổi bật</h3>
+              <p>Agent logs có stage, score, runtime, input/output count; self-improvement ghi lesson, prompt version và workflow suggestion.</p>
+            </div>
+          </div>
+
+          <h3>Ba workflow quan trọng nhất</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Workflow</th>
+                <th>Entry point</th>
+                <th>Mục đích</th>
+                <th>Kết quả</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Build Knowledge</strong></td>
+                <td><code>POST /api/agents/build-knowledge</code></td>
+                <td>Tạo một file Markdown tổng hợp từ nhiều nguồn.</td>
+                <td><code>backend/knowledge/&lt;category&gt;/&lt;slug&gt;.md</code> và vector chunks.</td>
+              </tr>
+              <tr>
+                <td><strong>Chat/RAG</strong></td>
+                <td><code>POST /api/chat</code></td>
+                <td>Định tuyến câu hỏi, retrieve chunks, trả lời bằng context đã index.</td>
+                <td>Câu trả lời, related files, sources, chat history Markdown.</td>
+              </tr>
+              <tr>
+                <td><strong>Agent Framework</strong></td>
+                <td><code>POST /api/agent-framework/run</code></td>
+                <td>Xử lý chủ đề chuyên sâu bằng profile domain, worker lanes và filter nguồn.</td>
+                <td>Topic folder gồm <code>index.md</code>, <code>sources/*.md</code>, <code>agent-framework.md</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="architecture">
+          <h2>Kiến trúc tổng thể</h2>
+          <p>
+            Kiến trúc được chia thành frontend điều khiển, FastAPI backend, tầng agent, các service hạ tầng,
+            và lớp lưu trữ local. Backend khởi tạo database khi startup qua <code>init_db()</code>, sau đó include các router health, agent, knowledge, chat, agent-framework và self-improvement.
+          </p>
+
+          <div class="flow" aria-label="Sơ đồ kiến trúc">
+            <div class="flow-row">
+              <div class="step primary"><strong>React Frontend</strong><span>Dashboard, builder, monitor, explorer, chat, self-improvement UI.</span></div>
+              <div class="step primary"><strong>FastAPI Backend</strong><span>Routers, schemas, CORS, request validation bằng Pydantic.</span></div>
+              <div class="step green"><strong>Agent Layer</strong><span>Orchestrator, search, crawl, clean, extract, critic, compose, index, answer.</span></div>
+              <div class="step green"><strong>Service Layer</strong><span>Ollama, web search, crawler, markdown, metadata, vector, knowledge map.</span></div>
+              <div class="step orange"><strong>Local Storage</strong><span>Markdown files, SQLite, ChromaDB hoặc JSON vector fallback.</span></div>
+            </div>
+          </div>
+
+          <h3>Module chính trong repo</h3>
+          <div class="file-map">
+            <div class="file-row">
+              <code>backend/app/agents</code>
+              <span>Các agent trực tiếp thực hiện công đoạn xử lý: search, crawl, clean, extract, critic, compose, index, answer, route input.</span>
+            </div>
+            <div class="file-row">
+              <code>backend/app/services</code>
+              <span>Các service hạ tầng và workflow phức hợp: vector store, Ollama, Markdown, metadata, refresh, cleanup, framework, chat knowledge.</span>
+            </div>
+            <div class="file-row">
+              <code>backend/app/self_improvement</code>
+              <span>Vòng đánh giá và cải thiện: evaluator, reflection, prompt optimizer, workflow optimizer, score service, memory.</span>
+            </div>
+            <div class="file-row">
+              <code>backend/app/api</code>
+              <span>FastAPI routers cho health, agents, knowledge, chat, agent framework và self-improvement.</span>
+            </div>
+            <div class="file-row">
+              <code>frontend/src</code>
+              <span>React UI, axios client, pages, layout, sidebar và các component hiển thị agent logs/self-improvement.</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="agent-contract">
+          <h2>Hợp đồng xử lý của Agent</h2>
+          <p>
+            Tất cả agent nghiệp vụ kế thừa <code>BaseAgent</code>. Cơ chế chung là gọi <code>execute(...)</code>,
+            agent tự chạy <code>run(...)</code>, và kết quả luôn được đóng gói theo envelope thống nhất.
+          </p>
+
+          <pre><code>{
+  "agent": "SearchAgent",
+  "status": "success | failed",
+  "message": "Mô tả ngắn kết quả",
+  "data": {}
+}</code></pre>
+
+          <div class="grid grid-2">
+            <div class="mini-card">
+              <h3>Luồng thành công</h3>
+              <p><code>BaseAgent.success(message, data)</code> trả về tên agent, trạng thái success, message và payload data.</p>
+            </div>
+            <div class="mini-card">
+              <h3>Luồng lỗi</h3>
+              <p><code>execute()</code> bắt exception, log lỗi và trả <code>failed(message)</code>. Vì vậy orchestrator có thể ghi nhận lỗi theo cùng format.</p>
+            </div>
+          </div>
+
+          <h3>Danh sách agent nghiệp vụ</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Vai trò</th>
+                <th>Input chính</th>
+                <th>Output chính</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>SearchAgent</code></td>
+                <td>Tạo keyword và tìm URL nguồn qua <code>WebSearchService</code>.</td>
+                <td><code>topic</code>, <code>limit</code></td>
+                <td><code>keywords</code>, <code>sources</code></td>
+              </tr>
+              <tr>
+                <td><code>CrawlerAgent</code></td>
+                <td>Crawl nội dung nguồn, hỗ trợ <code>local://</code>, HTTP fetch, trafilatura, BeautifulSoup fallback.</td>
+                <td><code>sources</code></td>
+                <td><code>documents</code> gồm raw text và status.</td>
+              </tr>
+              <tr>
+                <td><code>CleanerAgent</code></td>
+                <td>Lọc document thành công, chuẩn hóa text bằng <code>clean_text()</code>.</td>
+                <td><code>documents</code></td>
+                <td><code>cleaned_documents</code></td>
+              </tr>
+              <tr>
+                <td><code>ExtractorAgent</code></td>
+                <td>Rút summary, key points, concepts, architecture, technologies, risks bằng Ollama hoặc heuristic fallback.</td>
+                <td><code>cleaned_documents</code>, <code>use_ollama</code></td>
+                <td><code>extracted</code></td>
+              </tr>
+              <tr>
+                <td><code>CriticAgent</code></td>
+                <td>Chấm độ tin cậy nguồn theo URL và độ dài nội dung.</td>
+                <td><code>cleaned_documents</code></td>
+                <td><code>critiques</code> gồm trust score, level, reason.</td>
+              </tr>
+              <tr>
+                <td><code>ComposerAgent</code></td>
+                <td>Ghép tri thức thành Markdown, ghi metadata SQLite, rebuild knowledge map.</td>
+                <td><code>topic</code>, <code>category</code>, <code>sources</code>, <code>extracted</code>, <code>critiques</code></td>
+                <td><code>markdown_file</code>, <code>absolute_path</code>, <code>metadata</code></td>
+              </tr>
+              <tr>
+                <td><code>IndexerAgent</code></td>
+                <td>Chunk Markdown, tạo embedding, upsert ChromaDB hoặc JSON fallback.</td>
+                <td><code>file_path</code>, <code>metadata</code></td>
+                <td><code>indexed_chunks</code>, <code>backend</code></td>
+              </tr>
+              <tr>
+                <td><code>InputRouterAgent</code></td>
+                <td>Xếp hạng folder tri thức phù hợp cho câu hỏi dựa trên token, category, aliases, title, trust.</td>
+                <td><code>query</code>, <code>max_routes</code></td>
+                <td><code>top_routes</code>, <code>primary_folder</code>, confidence.</td>
+              </tr>
+              <tr>
+                <td><code>AnswerAgent</code></td>
+                <td>Retrieve chunks, ghép context, gọi Ollama trả lời hoặc fallback evidence-based.</td>
+                <td><code>question</code>, <code>route_paths</code>, <code>route_context</code></td>
+                <td><code>answer</code>, related files, sources, confidence, retrieval preview.</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="build-flow" class="section-soft">
+          <h2>Flow Build Knowledge tuần tự</h2>
+          <p>
+            Flow này nằm trong <code>OrchestratorAgent</code> và được gọi từ <code>POST /api/agents/build-knowledge</code>.
+            Đây là pipeline MVP, chạy tuần tự để dễ kiểm soát, ghi agent run sau từng bước và trả log đã compact cho frontend.
+          </p>
+
+          <div class="flow">
+            <div class="flow-row">
+              <div class="step primary"><strong>User Topic</strong><span>topic, mode, category</span></div>
+              <div class="step"><strong>Search</strong><span>DuckDuckGo hoặc local fallback</span></div>
+              <div class="step"><strong>Crawl</strong><span>HTTP/local source -> raw text</span></div>
+              <div class="step"><strong>Clean</strong><span>Text sạch, bỏ lỗi nguồn</span></div>
+              <div class="step"><strong>Extract</strong><span>Summary, points, risks</span></div>
+              <div class="step"><strong>Critic</strong><span>Trust score</span></div>
+              <div class="step"><strong>Compose</strong><span>Markdown + metadata</span></div>
+              <div class="step green"><strong>Index</strong><span>Vector chunks</span></div>
+            </div>
+          </div>
+
+          <h3>Mode và số nguồn</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Mode</th>
+                <th>Giới hạn trong Orchestrator</th>
+                <th>Ý nghĩa vận hành</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>quick</code></td>
+                <td>3 nguồn</td>
+                <td>Chạy nhanh, phù hợp thử nghiệm hoặc câu hỏi hẹp.</td>
+              </tr>
+              <tr>
+                <td><code>standard</code></td>
+                <td>5 nguồn</td>
+                <td>Cân bằng tốc độ và độ phủ.</td>
+              </tr>
+              <tr>
+                <td><code>deep</code></td>
+                <td>10 nguồn</td>
+                <td>Nhiều nguồn hơn, tốn thời gian crawl và extraction hơn.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Logic từng bước</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Bước</th>
+                <th>Logic xử lý</th>
+                <th>Dữ liệu chuyển tiếp</th>
+                <th>Ghi chú</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Search</td>
+                <td>Gọi <code>WebSearchService.search(topic, limit)</code>; nếu DDG lỗi thì tạo nguồn <code>local://search/&lt;slug&gt;</code>.</td>
+                <td><code>sources</code> gồm title, url, snippet.</td>
+                <td>Nguồn thấp giá trị bị lọc qua <code>is_low_value_source()</code>.</td>
+              </tr>
+              <tr>
+                <td>Crawl</td>
+                <td><code>CrawlerService.crawl_many()</code> chạy gather song song từng source.</td>
+                <td><code>documents</code> gồm raw_text, status.</td>
+                <td>HTML được extract bằng trafilatura trước, BeautifulSoup sau.</td>
+              </tr>
+              <tr>
+                <td>Clean</td>
+                <td>Bỏ document failed, chuẩn hóa whitespace/noise.</td>
+                <td><code>cleaned_documents</code> gồm clean_text và content_length.</td>
+                <td>Các document rỗng không đi tiếp.</td>
+              </tr>
+              <tr>
+                <td>Extract</td>
+                <td>Gọi Ollama light model để trả JSON; nếu lỗi parse hoặc Ollama unavailable thì fallback sentence/concept heuristic.</td>
+                <td><code>extracted</code> theo URL.</td>
+                <td>Prompt yêu cầu JSON có summary, key points, concepts, process, technologies, risks.</td>
+              </tr>
+              <tr>
+                <td>Critic</td>
+                <td>Tính trust score theo source URL và độ dài nội dung.</td>
+                <td><code>critiques</code></td>
+                <td>Score dùng để hiển thị độ tin cậy và filter ở framework/cleanup.</td>
+              </tr>
+              <tr>
+                <td>Compose</td>
+                <td><code>MarkdownService.compose()</code> gom summary, key points, concepts, risks, source list và metadata comment.</td>
+                <td>File Markdown, metadata SQLite, knowledge map.</td>
+                <td>File mặc định nằm ở <code>knowledge/&lt;category&gt;/&lt;slug&gt;.md</code>.</td>
+              </tr>
+              <tr>
+                <td>Index</td>
+                <td><code>VectorService.index_file()</code> chunk Markdown, embed từng chunk, upsert vector store.</td>
+                <td>Vector records và số chunk indexed.</td>
+                <td>Ollama embedding lỗi sẽ dùng hash embedding 384 chiều.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <details>
+            <summary>Payload ví dụ</summary>
+            <pre><code>POST /api/agents/build-knowledge
+{
+  "topic": "Local Multi Agent Architecture",
+  "mode": "quick",
+  "category": "ai-systems"
+}</code></pre>
+          </details>
+        </section>
+
+        <section id="chat-flow">
+          <h2>Flow Chat/RAG với auto-refresh</h2>
+          <p>
+            Flow chat do <code>ChatKnowledgeService</code> điều phối. Điểm hay của luồng này là không chỉ retrieve vector đơn giản:
+            nó còn định tuyến câu hỏi vào folder tri thức phù hợp, đọc knowledge map, tự refresh khi thiếu dữ liệu và lưu lịch sử chat thành Markdown.
+          </p>
+
+          <div class="flow">
+            <div class="flow-row">
+              <div class="step primary"><strong>User Message</strong><span>message, conversation_id, auto_refresh</span></div>
+              <div class="step"><strong>ChatInputAgent</strong><span>Normalize input, estimate tokens</span></div>
+              <div class="step"><strong>InputRouterAgent</strong><span>Chọn folder/category phù hợp</span></div>
+              <div class="step"><strong>AnswerAgent</strong><span>Map excerpt + vector search + context</span></div>
+              <div class="step orange"><strong>AutoRefreshAgent</strong><span>Nếu confidence thấp hoặc needs_refresh</span></div>
+              <div class="step green"><strong>ChatMemoryAgent</strong><span>Lưu turn vào Markdown history</span></div>
+            </div>
+          </div>
+
+          <h3>Logic trong ChatKnowledgeService</h3>
+          <ol>
+            <li>Chuẩn hóa câu hỏi bằng <code>normalize_whitespace()</code>, ước lượng token trước/sau để ghi log.</li>
+            <li>Gọi <code>InputRouterAgent.execute(query, max_routes=5)</code> để tìm folder tri thức có liên quan.</li>
+            <li>Gọi <code>AnswerAgent</code> lần 1 với <code>route_paths</code> và <code>route_context</code>.</li>
+            <li>Nếu <code>auto_refresh=true</code> và answer báo <code>needs_refresh=true</code>, gọi <code>KnowledgeRefreshService.refresh()</code>.</li>
+            <li>Sau refresh, gọi <code>AnswerAgent</code> lần 2 để trả lời bằng dữ liệu mới.</li>
+            <li>Lưu câu hỏi, câu trả lời, related files, sources và updated files vào <code>knowledge/_chat_history/*.md</code>.</li>
+          </ol>
+
+          <h3>Logic trong AnswerAgent</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Giai đoạn</th>
+                <th>Mô tả</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Knowledge map</td>
+                <td>Đọc <code>_knowledge_map.md</code> và lấy excerpt liên quan câu hỏi để giúp model định hướng.</td>
+              </tr>
+              <tr>
+                <td>Vector query</td>
+                <td>Embed câu hỏi, query top chunks, lọc match score thấp hoặc file không trả lời được như <code>agent-framework.md</code>, <code>_knowledge_map.md</code>, chat history, quarantine.</td>
+              </tr>
+              <tr>
+                <td>Route merge</td>
+                <td>Nếu router chọn folder, AnswerAgent đọc trực tiếp các Markdown trong folder đó để bổ sung route matches.</td>
+              </tr>
+              <tr>
+                <td>Context build</td>
+                <td>Ghép route context, knowledge map excerpt và selected chunks trong giới hạn ký tự.</td>
+              </tr>
+              <tr>
+                <td>Generation</td>
+                <td>Gọi Ollama main model với prompt chỉ trả lời dựa trên context. Nếu không có response, dùng fallback evidence sentences.</td>
+              </tr>
+              <tr>
+                <td>Confidence</td>
+                <td>Lấy score cao nhất trong selected matches. Nếu confidence thấp hoặc ít chunk thì báo <code>needs_refresh</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout">
+            Khi không có chunk phù hợp, AnswerAgent không bịa. Nó trả lời rằng kho tri thức chưa đủ dữ liệu, có thể kèm knowledge map excerpt và bật cờ <code>needs_refresh=true</code>.
+          </div>
+        </section>
+
+        <section id="refresh-flow" class="section-soft">
+          <h2>Flow Refresh Knowledge</h2>
+          <p>
+            Refresh là biến thể của build knowledge nhưng lưu theo cấu trúc shard nhiều file. Nó được gọi trực tiếp qua <code>POST /api/knowledge/refresh</code>
+            hoặc gián tiếp bởi ChatKnowledgeService khi câu hỏi thiếu context.
+          </p>
+
+          <div class="flow">
+            <div class="flow-row">
+              <div class="step primary"><strong>Topic</strong><span>topic, category, mode</span></div>
+              <div class="step"><strong>Search/Crawl/Clean</strong><span>Tạo cleaned_documents</span></div>
+              <div class="step"><strong>Extract/Critic</strong><span>Summary và trust score</span></div>
+              <div class="step"><strong>Save Shards</strong><span>index.md + sources/*.md</span></div>
+              <div class="step green"><strong>Index Files</strong><span>Vector chunks cho từng shard</span></div>
+              <div class="step green"><strong>Knowledge Map</strong><span>Rebuild và index map</span></div>
+            </div>
+          </div>
+
+          <h3>Cấu trúc file refresh</h3>
+          <pre><code>backend/knowledge/&lt;category&gt;/&lt;topic-slug&gt;/
+  index.md
+  sources/
+    01-&lt;source-title&gt;.md
+    02-&lt;source-title&gt;.md</code></pre>
+
+          <p>
+            Trước khi ghi refresh mới, service xóa các Markdown cũ có metadata <code>"refresh_mode": true</code>,
+            đồng thời xóa metadata và vector records tương ứng. Điều này giúp topic folder không tích tụ shard cũ.
+          </p>
+
+          <h3>Nội dung từng loại file</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>File</th>
+                <th>Nội dung chính</th>
+                <th>Mục đích với agent</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>index.md</code></td>
+                <td>Mục đích, tóm tắt, ý chính, khái niệm, danh sách nguồn/shard, rủi ro, metadata.</td>
+                <td>Agent đọc trước để hiểu tổng quan và quyết định shard nào cần dùng.</td>
+              </tr>
+              <tr>
+                <td><code>sources/*.md</code></td>
+                <td>Topic, source URL, trust, summary, key points, concepts, source content, refresh metadata.</td>
+                <td>Cung cấp bằng chứng và nội dung chi tiết cho RAG.</td>
+              </tr>
+              <tr>
+                <td><code>_knowledge_map.md</code></td>
+                <td>Cây thư mục Markdown, danh sách metadata đã index, gợi ý định tuyến.</td>
+                <td>Router và AnswerAgent dùng để tìm vùng tri thức phù hợp.</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="framework-flow">
+          <h2>Agent Framework chuyên sâu</h2>
+          <p>
+            <code>AgentFrameworkService</code> là workflow nâng cao cho chủ đề cần xử lý theo domain. Nó chọn profile,
+            chia nguồn thành lane, chạy worker agents có giới hạn song song, tổng hợp, lọc nguồn yếu và ghi manifest <code>agent-framework.md</code>.
+          </p>
+
+          <div class="flow">
+            <div class="flow-row">
+              <div class="step primary"><strong>Planner</strong><span>Chọn profile, focus areas, source limit</span></div>
+              <div class="step"><strong>Search lanes</strong><span>Mỗi focus tạo query riêng</span></div>
+              <div class="step"><strong>Source Quality</strong><span>Dedupe, rank trusted domain, reject low-value</span></div>
+              <div class="step"><strong>Router</strong><span>Chia source vào worker packets</span></div>
+              <div class="step green"><strong>Workers</strong><span>Crawl, clean, extract, critic từng packet</span></div>
+              <div class="step orange"><strong>Synthesis/Filter</strong><span>Gộp, lọc theo trust và length</span></div>
+              <div class="step green"><strong>Save/Index/Map</strong><span>Ghi shard, manifest, vector, map</span></div>
+            </div>
+          </div>
+
+          <h3>Profile domain</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Profile</th>
+                <th>Category mặc định</th>
+                <th>Focus areas</th>
+                <th>Trust threshold</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>general</code></td>
+                <td><code>general</code></td>
+                <td>overview, core concepts, workflow, risks</td>
+                <td>0.10</td>
+              </tr>
+              <tr>
+                <td><code>finance</code></td>
+                <td><code>finance</code></td>
+                <td>market context, instruments, risk/regulation, personal finance</td>
+                <td>0.20</td>
+              </tr>
+              <tr>
+                <td><code>economy</code></td>
+                <td><code>economy</code></td>
+                <td>vĩ mô, GDP/lạm phát, chính sách, lao động, triển vọng Việt Nam</td>
+                <td>0.35</td>
+              </tr>
+              <tr>
+                <td><code>programming</code></td>
+                <td><code>programming</code></td>
+                <td>architecture, implementation, API/tooling, testing/performance, security</td>
+                <td>0.15</td>
+              </tr>
+              <tr>
+                <td><code>ai</code></td>
+                <td><code>ai</code></td>
+                <td>model behavior, agent workflow, retrieval/memory, evaluation, operations</td>
+                <td>0.15</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Chi tiết worker lane</h3>
+          <p>
+            Framework tạo tối đa 5 worker packets. Mỗi packet chạy <code>CrawlerAgent</code>, <code>CleanerAgent</code>,
+            <code>ExtractorAgent</code> và <code>CriticAgent</code>. Concurrency bị giới hạn bằng <code>asyncio.Semaphore(profile.max_parallel_workers)</code>.
+            Chỉ một số worker đầu dùng LLM extraction theo <code>profile.use_llm_workers</code>; các worker còn lại có thể dùng fallback để giảm tải phần cứng.
+          </p>
+
+          <h3>Cách framework chấm và trả log</h3>
+          <ul>
+            <li>Mỗi stage log có <code>agent</code>, <code>stage</code>, <code>score</code>, <code>runtime_ms</code>, <code>input_count</code>, <code>output_count</code>.</li>
+            <li>Worker score dựa trên tỷ lệ cleaned document và average trust score.</li>
+            <li>Filter score dựa trên tỷ lệ kept URL nhân với trust trung bình.</li>
+            <li><code>average_score</code> là trung bình theo agent scores đã group.</li>
+          </ul>
+        </section>
+
+        <section id="self-improvement" class="section-soft">
+          <h2>Self-Improvement Loop</h2>
+          <p>
+            Self-improvement chạy sau từng agent trong <code>OrchestratorAgent._execute_agent()</code> nếu bật <code>SELF_IMPROVEMENT_ENABLED</code>.
+            Nó tạo audit trail, chấm điểm output, rút bài học, tạo prompt version và workflow suggestion. Mặc định hệ thống không tự apply prompt, không tự sửa workflow thật và không tự sửa code production.
+          </p>
+
+          <div class="flow">
+            <div class="flow-row">
+              <div class="step primary"><strong>Agent Result</strong><span>input, output, status, runtime</span></div>
+              <div class="step"><strong>ScoreService</strong><span>Record agent_runs, scoreboard</span></div>
+              <div class="step"><strong>EvaluatorAgent</strong><span>Score 0-60, risk, suggestions</span></div>
+              <div class="step"><strong>ReflectionAgent</strong><span>Lưu lesson nếu score thấp</span></div>
+              <div class="step green"><strong>PromptOptimizer</strong><span>Tạo prompt version inactive</span></div>
+              <div class="step orange"><strong>WorkflowOptimizer</strong><span>Tạo suggestion pending</span></div>
+            </div>
+          </div>
+
+          <h3>Tiêu chí EvaluatorAgent</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Tiêu chí</th>
+                <th>Thang điểm</th>
+                <th>Ý nghĩa</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Đúng yêu cầu</td><td>0-10</td><td>Output có giải quyết task không.</td></tr>
+              <tr><td>Đầy đủ</td><td>0-10</td><td>Có thiếu phần quan trọng không.</td></tr>
+              <tr><td>Cấu trúc rõ</td><td>0-10</td><td>Payload có dễ đọc, dễ parse, dễ review không.</td></tr>
+              <tr><td>Có thể hành động</td><td>0-10</td><td>Kết quả có dùng tiếp được trong pipeline không.</td></tr>
+              <tr><td>Không bịa</td><td>0-10</td><td>Rủi ro hallucination hoặc suy đoán quá mức.</td></tr>
+              <tr><td>Tối ưu local-first</td><td>0-10</td><td>Có tôn trọng giới hạn tài nguyên local không.</td></tr>
+            </tbody>
+          </table>
+
+          <h3>Policy mặc định</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Biến môi trường</th>
+                <th>Mặc định</th>
+                <th>Tác dụng</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>SELF_IMPROVEMENT_ENABLED</code></td><td><span class="tag green">true</span></td><td>Bật evaluator/reflection/optimizer sau agent run.</td></tr>
+              <tr><td><code>AUTO_SAVE_LESSONS</code></td><td><span class="tag green">true</span></td><td>Tự lưu lesson vào SQLite và Markdown memory.</td></tr>
+              <tr><td><code>AUTO_SAVE_PROMPT_VERSIONS</code></td><td><span class="tag green">true</span></td><td>Tự tạo prompt version mới nhưng inactive.</td></tr>
+              <tr><td><code>ALLOW_AUTO_PROMPT_APPLY</code></td><td><span class="tag red">false</span></td><td>Không tự active prompt mới trừ khi policy cho phép và risk low.</td></tr>
+              <tr><td><code>ALLOW_AUTO_WORKFLOW_APPLY</code></td><td><span class="tag red">false</span></td><td>Workflow suggestion chỉ pending/applied marker, không đổi pipeline thật.</td></tr>
+              <tr><td><code>ALLOW_AUTO_CODE_PATCH</code></td><td><span class="tag red">false</span></td><td>Không tự tạo/sửa code production.</td></tr>
+              <tr><td><code>REFLECTION_SCORE_THRESHOLD</code></td><td><span class="tag orange">42</span></td><td>Score dưới ngưỡng sẽ tạo reflection lesson.</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout warning">
+            Giới hạn hiện tại: prompt version active đã lưu trong DB nhưng agent production chưa tự đọc active prompt để thay đổi hành vi. Workflow suggestion cũng chỉ là quản trị trạng thái, không rewrite code hoặc thứ tự agent.
+          </div>
+        </section>
+
+        <section id="storage">
+          <h2>Lưu trữ dữ liệu và metadata</h2>
+          <p>
+            Hệ thống kết hợp ba lớp lưu trữ: file Markdown để con người đọc được, SQLite cho metadata/audit,
+            và vector store cho retrieval. Tất cả nằm local trong backend.
+          </p>
+
+          <h3>Markdown knowledge</h3>
+          <pre><code>backend/knowledge/
+  _knowledge_map.md
+  _chat_history/
+  _maintenance/
+  _quarantine/
+  self-improvement/
+  &lt;category&gt;/
+    &lt;slug&gt;.md
+    &lt;topic-slug&gt;/
+      index.md
+      agent-framework.md
+      sources/*.md</code></pre>
+
+          <h3>SQLite schema</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Bảng</th>
+                <th>Vai trò</th>
+                <th>Dữ liệu chính</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>knowledge_items</code></td>
+                <td>Metadata cho file tri thức.</td>
+                <td>title, slug, category, file_path, sources, trust_score, timestamps.</td>
+              </tr>
+              <tr>
+                <td><code>agent_runs</code></td>
+                <td>Lịch sử từng agent run.</td>
+                <td>task_id, task, agent_name, input, output, score, status, runtime.</td>
+              </tr>
+              <tr>
+                <td><code>agent_scoreboard</code></td>
+                <td>Rollup chất lượng theo agent.</td>
+                <td>total runs, success/fail, average score, average runtime.</td>
+              </tr>
+              <tr>
+                <td><code>improvement_lessons</code></td>
+                <td>Bài học tự cải thiện.</td>
+                <td>lesson type, agent name, task id, content, status.</td>
+              </tr>
+              <tr>
+                <td><code>prompt_versions</code></td>
+                <td>Các phiên bản prompt do optimizer tạo hoặc user active.</td>
+                <td>agent, version, prompt, score, risk, is_active.</td>
+              </tr>
+              <tr>
+                <td><code>workflow_suggestions</code></td>
+                <td>Đề xuất cải tiến workflow.</td>
+                <td>suggestion, expected benefit, risk level, pending/applied/rejected.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Vector store</h3>
+          <p>
+            <code>VectorService</code> ưu tiên ChromaDB persistent collection <code>hivemind_knowledge</code>.
+            Nếu import hoặc init ChromaDB lỗi, service ghi JSON fallback tại <code>backend/vector_store/fallback_index.json</code>.
+            Mỗi chunk có id SHA-256 từ <code>relative_file:chunk_index</code>, metadata file path, sources và trust score.
+          </p>
+        </section>
+
+        <section id="api" class="section-soft">
+          <h2>API map</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Nhóm</th>
+                <th>Endpoint</th>
+                <th>Mô tả</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Health</td><td><code>GET /api/health</code></td><td>Kiểm tra backend.</td></tr>
+              <tr><td>Health</td><td><code>GET /api/health/ollama</code></td><td>Kiểm tra Ollama và danh sách model.</td></tr>
+              <tr><td>Agents</td><td><code>POST /api/agents/build-knowledge</code></td><td>Chạy OrchestratorAgent tuần tự.</td></tr>
+              <tr><td>Knowledge</td><td><code>GET /api/knowledge</code></td><td>Liệt kê metadata tri thức.</td></tr>
+              <tr><td>Knowledge</td><td><code>GET /api/knowledge/read?file_path=...</code></td><td>Đọc nội dung Markdown.</td></tr>
+              <tr><td>Knowledge</td><td><code>GET /api/knowledge/map</code></td><td>Rebuild và đọc knowledge map.</td></tr>
+              <tr><td>Knowledge</td><td><code>POST /api/knowledge/refresh</code></td><td>Làm mới topic thành index/source shards.</td></tr>
+              <tr><td>Knowledge</td><td><code>POST /api/knowledge/cleanup</code></td><td>Scan duplicate/noise, quarantine nếu không dry-run, rebuild map.</td></tr>
+              <tr><td>Knowledge</td><td><code>DELETE /api/knowledge/delete</code></td><td>Xóa file, metadata, vector records, rebuild map.</td></tr>
+              <tr><td>Chat</td><td><code>POST /api/chat</code></td><td>Chat với RAG, route, auto-refresh, history.</td></tr>
+              <tr><td>Framework</td><td><code>GET /api/agent-framework/profiles</code></td><td>Liệt kê domain profiles.</td></tr>
+              <tr><td>Framework</td><td><code>POST /api/agent-framework/run</code></td><td>Chạy workflow chuyên sâu theo profile.</td></tr>
+              <tr><td>Self Improvement</td><td><code>GET /api/self-improvement/summary</code></td><td>Tổng quan runs, score, lessons, prompts, suggestions.</td></tr>
+              <tr><td>Self Improvement</td><td><code>GET /api/self-improvement/runs</code></td><td>Danh sách agent runs, có filter agent/status/limit.</td></tr>
+              <tr><td>Self Improvement</td><td><code>GET /api/self-improvement/lessons</code></td><td>Danh sách lessons.</td></tr>
+              <tr><td>Self Improvement</td><td><code>POST /api/self-improvement/lessons/{id}/archive</code></td><td>Archive một lesson.</td></tr>
+              <tr><td>Self Improvement</td><td><code>GET /api/self-improvement/prompt-versions</code></td><td>Danh sách prompt versions.</td></tr>
+              <tr><td>Self Improvement</td><td><code>POST /api/self-improvement/prompt-versions/{id}/activate</code></td><td>Active prompt version thủ công.</td></tr>
+              <tr><td>Self Improvement</td><td><code>GET /api/self-improvement/workflow-suggestions</code></td><td>Danh sách workflow suggestions.</td></tr>
+              <tr><td>Self Improvement</td><td><code>POST /api/self-improvement/workflow-suggestions/{id}/apply</code></td><td>Đánh dấu suggestion đã apply.</td></tr>
+              <tr><td>Self Improvement</td><td><code>POST /api/self-improvement/workflow-suggestions/{id}/reject</code></td><td>Từ chối suggestion.</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="frontend">
+          <h2>Frontend và cách UI bám vào flow</h2>
+          <p>
+            Frontend dùng <code>axios</code> client tại <code>frontend/src/api/client.ts</code>, base URL mặc định là
+            <code>http://localhost:8000</code> hoặc <code>VITE_API_BASE_URL</code>. Timeout client đặt 120 giây vì các workflow crawl/extract có thể lâu.
+          </p>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Trang</th>
+                <th>Route UI</th>
+                <th>Chức năng chính</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Dashboard</td><td><code>/</code></td><td>Tổng quan hệ thống.</td></tr>
+              <tr><td>Knowledge Builder</td><td><code>/builder</code></td><td>Gọi build/refresh/framework để tạo tri thức.</td></tr>
+              <tr><td>Agent Monitor</td><td><code>/agents</code></td><td>Hiển thị agent logs/stages/runtimes/scores.</td></tr>
+              <tr><td>Knowledge Explorer</td><td><code>/knowledge</code></td><td>Liệt kê, đọc, xóa Markdown knowledge.</td></tr>
+              <tr><td>Chat With Knowledge</td><td><code>/chat</code></td><td>Chat RAG, xem related files, sources, auto-refresh status.</td></tr>
+              <tr><td>Self Improvement</td><td><code>/self-improvement</code></td><td>Summary, top agents, failures, latest lessons.</td></tr>
+              <tr><td>Agent Runs</td><td><code>/self-improvement/runs</code></td><td>Audit trail từng agent run.</td></tr>
+              <tr><td>Prompt Versions</td><td><code>/self-improvement/prompts</code></td><td>Xem và active prompt versions.</td></tr>
+              <tr><td>Improvement Lessons</td><td><code>/self-improvement/lessons</code></td><td>Xem/archive lessons.</td></tr>
+              <tr><td>Workflow Suggestions</td><td><code>/self-improvement/workflows</code></td><td>Apply/reject suggestions ở mức quản trị.</td></tr>
+              <tr><td>Settings</td><td><code>/settings</code></td><td>Kiểm tra/cấu hình vận hành.</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="fallbacks" class="section-soft">
+          <h2>Fallback, kiểm soát lỗi và an toàn</h2>
+          <div class="grid grid-2">
+            <div class="mini-card">
+              <h3>Web search fallback</h3>
+              <p>Nếu DDG/duckduckgo package lỗi, service tạo nguồn <code>local://search/&lt;slug&gt;</code> với snippet cảnh báo. Pipeline vẫn tạo được note nhưng trust thấp.</p>
+            </div>
+            <div class="mini-card">
+              <h3>Crawler fallback</h3>
+              <p>Nếu trafilatura không extract được, BeautifulSoup lấy text sau khi bỏ script, style, nav, footer, aside, form.</p>
+            </div>
+            <div class="mini-card">
+              <h3>LLM fallback</h3>
+              <p>Extractor, Answer và self-improvement đều có logic heuristic/rule-based khi Ollama không phản hồi hoặc JSON không parse được.</p>
+            </div>
+            <div class="mini-card">
+              <h3>Vector fallback</h3>
+              <p>Nếu ChromaDB không khả dụng, hệ thống dùng JSON index với hash embedding và cosine similarity.</p>
+            </div>
+            <div class="mini-card">
+              <h3>Path safety</h3>
+              <p>Các service ghi/đọc file dùng <code>ensure_inside()</code> để giữ path nằm trong <code>knowledge_path</code>.</p>
+            </div>
+            <div class="mini-card">
+              <h3>Không tự thay đổi nguy hiểm</h3>
+              <p>Self-improvement mặc định không tự apply prompt, không tự apply workflow thật, không patch code production và không fine-tune.</p>
+            </div>
+          </div>
+
+          <h3>Cleanup/quarantine</h3>
+          <p>
+            <code>KnowledgeCleanupService</code> scan các Markdown không thuộc system dirs, phát hiện duplicate bằng fingerprint URL/hash,
+            phát hiện noise theo blocked source, độ dài ngắn hoặc trust thấp. Nếu không dry-run, file bị chuyển vào <code>_quarantine/&lt;timestamp&gt;/...</code>
+            với suffix <code>.disabled</code>, metadata và vector records bị xóa, sau đó rebuild knowledge map.
+          </p>
+        </section>
+
+        <section id="operations">
+          <h2>Vận hành local</h2>
+          <h3>Backend</h3>
+          <pre><code>cd backend
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+uvicorn app.main:app --reload</code></pre>
+
+          <h3>Frontend</h3>
+          <pre><code>cd frontend
+npm install
+npm run dev</code></pre>
+
+          <h3>Ollama models khuyến nghị</h3>
+          <pre><code>ollama pull qwen2.5:7b
+ollama pull qwen2.5:3b
+ollama pull nomic-embed-text</code></pre>
+
+          <h3>Biến môi trường quan trọng</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Biến</th>
+                <th>Mặc định</th>
+                <th>Ý nghĩa</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>OLLAMA_BASE_URL</code></td><td><code>http://localhost:11434</code></td><td>Endpoint Ollama local.</td></tr>
+              <tr><td><code>OLLAMA_MAIN_MODEL</code></td><td><code>qwen2.5:7b</code></td><td>Model trả lời chính.</td></tr>
+              <tr><td><code>OLLAMA_LIGHT_MODEL</code></td><td><code>qwen2.5:3b</code></td><td>Model nhẹ cho extraction/evaluation.</td></tr>
+              <tr><td><code>OLLAMA_EMBED_MODEL</code></td><td><code>nomic-embed-text</code></td><td>Model embedding.</td></tr>
+              <tr><td><code>DATABASE_URL</code></td><td><code>sqlite:///./hivemind.db</code></td><td>SQLite local.</td></tr>
+              <tr><td><code>KNOWLEDGE_DIR</code></td><td><code>./knowledge</code></td><td>Root Markdown knowledge.</td></tr>
+              <tr><td><code>VECTOR_STORE_DIR</code></td><td><code>./vector_store</code></td><td>Root ChromaDB/JSON vector store.</td></tr>
+              <tr><td><code>DEFAULT_CHUNK_SIZE</code></td><td><code>800</code></td><td>Kích thước chunk Markdown khi index.</td></tr>
+              <tr><td><code>REQUEST_TIMEOUT_SECONDS</code></td><td><code>20</code></td><td>Timeout request outbound/call Ollama.</td></tr>
+            </tbody>
+          </table>
+
+          <div class="callout">
+            Khi cần đọc nhanh hệ thống chạy tới đâu, hãy xem <code>agent_logs</code> trong response API hoặc các trang frontend Agent Monitor, Agent Runs và Self Improvement.
+          </div>
+
+          <p class="footer-note">
+            Tài liệu này được viết dựa trên các file chính: <code>backend/app/agents/*.py</code>,
+            <code>backend/app/services/*.py</code>, <code>backend/app/self_improvement/*.py</code>,
+            <code>backend/app/api/*.py</code>, <code>frontend/src/api/client.ts</code> và docs Markdown hiện có.
+          </p>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
