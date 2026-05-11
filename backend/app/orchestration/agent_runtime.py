@@ -5,7 +5,10 @@ from typing import Any
 
 from app.agents.agent_router_agent import AgentRouterAgent
 from app.agents.answer_agent import AnswerAgent
+from app.agents.citation_agent import CitationAgent
+from app.agents.context_builder_agent import ContextBuilderAgent
 from app.agents.intent_classifier_agent import IntentClassifierAgent
+from app.agents.memory_agent import MemoryAgent
 from app.agents.planner_agent import PlannerAgent
 from app.agents.verifier_agent import VerifierAgent
 from app.registry.agent_registry import AgentRegistry
@@ -89,6 +92,23 @@ class AgentRuntime:
                 request=message,
                 intent=input_data.get("intent", {}),
                 plan=input_data.get("plan", {}),
+                user_id=user_id,
+            )
+        if name == "ContextBuilderAgent":
+            return await ContextBuilderAgent().execute(
+                message=message,
+                route=input_data.get("route", {}),
+                user_id=user_id,
+            )
+        if name == "CitationAgent":
+            return await CitationAgent().execute(
+                citations=input_data.get("citations", []),
+                retrieval=input_data.get("retrieval", []),
+                sources=input_data.get("sources", []),
+            )
+        if name == "MemoryAgent":
+            return await MemoryAgent().execute(
+                message=message,
                 user_id=user_id,
             )
         if name == "VerifierAgent":

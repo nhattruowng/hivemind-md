@@ -102,6 +102,9 @@ export interface ChatResponse {
   citations: Array<Record<string, unknown>>;
   verification: Record<string, unknown>;
   plan: Record<string, unknown>;
+  context: Record<string, unknown>;
+  routing: Record<string, unknown>;
+  timeline: RuntimeTimelineItem[];
   agents_used: string[];
   tool_calls: Array<Record<string, unknown>>;
   needs_approval: boolean;

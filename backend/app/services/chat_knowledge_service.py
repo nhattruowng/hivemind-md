@@ -3,10 +3,10 @@ from time import perf_counter
 from typing import Any
 
 from app.agents.answer_agent import AnswerAgent
-from app.agents.input_router_agent import InputRouterAgent
-from app.agents.planner_agent import PlannerAgent
 from app.agents.verifier_agent import VerifierAgent
 from app.config import Settings, get_settings
+from app.orchestration.agent_runtime import AgentRuntime
+from app.orchestration.planner_service import PlannerRuntimeService
 from app.services.chat_history_service import ChatHistoryService
 from app.services.knowledge_refresh_service import KnowledgeRefreshService
 from app.utils.text_utils import compact_preview, estimate_tokens, normalize_whitespace
@@ -17,19 +17,19 @@ class ChatKnowledgeService:
         self,
         settings: Settings | None = None,
         answer_agent: AnswerAgent | None = None,
-        router_agent: InputRouterAgent | None = None,
-        planner_agent: PlannerAgent | None = None,
         verifier_agent: VerifierAgent | None = None,
         refresh_service: KnowledgeRefreshService | None = None,
         history_service: ChatHistoryService | None = None,
+        planner_service: PlannerRuntimeService | None = None,
+        runtime: AgentRuntime | None = None,
     ) -> None:
         self.settings = settings or get_settings()
         self.answer_agent = answer_agent or AnswerAgent(settings=self.settings)
-        self.router_agent = router_agent or InputRouterAgent(settings=self.settings)
-        self.planner_agent = planner_agent or PlannerAgent()
         self.verifier_agent = verifier_agent or VerifierAgent()
         self.refresh_service = refresh_service or KnowledgeRefreshService(settings=self.settings)
         self.history_service = history_service or ChatHistoryService(self.settings)
+        self.runtime = runtime or AgentRuntime()
+        self.planner_service = planner_service or PlannerRuntimeService(runtime=self.runtime)
 
     async def chat(
         self,
@@ -61,48 +61,24 @@ class ChatKnowledgeService:
             )
         )
 
-        route_started = perf_counter()
-        route_result = await self.router_agent.execute(query=question, max_routes=5)
-        route_data = route_result.get("data", {})
+        preview = await self.planner_service.preview(
+            message=question,
+            category=category,
+            mode=mode,
+            auto_refresh=auto_refresh,
+        )
+        route_data = preview.get("route", {})
         route_paths = self._selected_route_paths(route_data)
         effective_category = self._effective_category(category, route_data)
-        logs.append(
-            self._log(
-                "InputRouterAgent",
-                "route",
-                route_result.get("message", "Routed input to supported knowledge folders."),
-                started=route_started,
-                score=float(route_data.get("confidence", 0.0) or 0.0),
-                input_count=1,
-                output_count=len(route_paths),
-                data=route_data,
-            )
-        )
-
-        plan_started = perf_counter()
-        plan_result = await self.planner_agent.execute(
-            request=question,
-            route_data=route_data,
-            auto_refresh=auto_refresh,
-            category=effective_category,
-            mode=mode,
-        )
-        plan_data = plan_result.get("data", {})
-        logs.append(
-            self._log(
-                "PlannerAgent",
-                "plan",
-                plan_result.get("message", "Generated execution plan."),
-                started=plan_started,
-                score=self._plan_score(plan_data),
-                input_count=1,
-                output_count=len(plan_data.get("steps", []) or []),
-                data=plan_data,
-            )
-        )
+        plan_data = preview.get("plan", {})
+        context_data = preview.get("context", {})
+        routing_data = preview.get("routing", {})
+        runtime_timeline = list(preview.get("timeline", []))
+        logs.extend(self._runtime_logs(runtime_timeline, fallback_input_count=normalized_tokens))
 
         first_answer = await self._run_answer_agent(question, route_data=route_data)
         logs.append(first_answer["log"])
+        runtime_timeline.append(self._log_to_timeline(first_answer["log"], category="knowledge"))
         answer_data = first_answer["data"]
         auto_refreshed = False
         updated_files: list[str] = []
@@ -133,13 +109,31 @@ class ChatKnowledgeService:
                 )
             )
             logs.extend(self._stage_refresh_logs(refresh_result.get("agent_logs", [])))
+            runtime_timeline.append(self._log_to_timeline(logs[-1], category="knowledge") if logs else {})
 
             second_answer = await self._run_answer_agent(question, stage="answer_after_refresh", route_data=route_data)
             logs.append(second_answer["log"])
+            runtime_timeline.append(self._log_to_timeline(second_answer["log"], category="knowledge"))
             answer_data = second_answer["data"]
+
+        citation_run = await self.runtime.execute_registered_agent(
+            "CitationAgent",
+            input_data={
+                "citations": answer_data.get("citations", []),
+                "retrieval": answer_data.get("retrieval", []),
+                "sources": answer_data.get("sources", []),
+            },
+            task_id=str(preview.get("task_id") or "chat"),
+        )
+        runtime_timeline.append(citation_run)
+        logs.append(self._runtime_log(citation_run, stage="citation", input_count=len(answer_data.get("retrieval", []) or [])))
+        citation_data = citation_run.get("data", {})
+        if citation_data.get("citations"):
+            answer_data["citations"] = citation_data["citations"]
 
         verification = await self._run_verifier_agent(question, answer_data)
         logs.append(verification["log"])
+        runtime_timeline.append(self._log_to_timeline(verification["log"], category="safety"))
         verification_data = verification["data"]
         answer_data["verification"] = verification_data
         answer_data["confidence"] = self._verified_confidence(
@@ -170,7 +164,22 @@ class ChatKnowledgeService:
             )
         )
 
+        memory_run = await self.runtime.execute_registered_agent(
+            "MemoryAgent",
+            input_data={"message": question, "answer": answer_data.get("answer", "")},
+            task_id=str(preview.get("task_id") or "chat"),
+        )
+        runtime_timeline.append(memory_run)
+        logs.append(self._runtime_log(memory_run, stage="memory_agent", input_count=normalized_tokens))
+
         roles = self._agent_roles(logs)
+        agents_used = self._unique_agents(
+            [
+                *[str(agent) for agent in preview.get("agents_used", [])],
+                *[str(item.get("agent", "")) for item in runtime_timeline if isinstance(item, dict)],
+                *[role["name"] for role in roles],
+            ]
+        )
         return {
             "answer": answer_data.get("answer", ""),
             "related_files": answer_data.get("related_files", []),
@@ -184,8 +193,11 @@ class ChatKnowledgeService:
             "citations": answer_data.get("citations", []),
             "verification": verification_data,
             "plan": plan_data,
-            "agents_used": [role["name"] for role in roles],
-            "tool_calls": [],
+            "context": context_data,
+            "routing": routing_data,
+            "timeline": [item for item in runtime_timeline if item],
+            "agents_used": agents_used,
+            "tool_calls": self._timeline_tool_calls(runtime_timeline),
             "needs_approval": bool(plan_data.get("approval_required")),
             "approval_request": None,
             "token_estimate": answer_data.get("token_estimate", normalized_tokens),
@@ -336,6 +348,10 @@ class ChatKnowledgeService:
             "map": ("Map Writer", "Ghi shard và cập nhật knowledge map."),
             "verify": ("Verifier", "Kiểm tra grounding, citation, claim thiếu nguồn và rủi ro."),
             "memory": ("Chat Memory", "Lưu lịch sử chat thành Markdown."),
+            "memory_agent": ("Memory Agent", "Chỉ lưu memory khi người dùng yêu cầu rõ."),
+            "context": ("Context Builder", "Nạp memory, route tri thức và quyền thực thi."),
+            "runtime": ("Runtime Agent", "Chạy agent đã đăng ký và ghi timeline."),
+            "citation": ("Citation Agent", "Chuẩn hóa citation từ chunk, file và source."),
         }
         roles: list[dict[str, str]] = []
         seen: set[str] = set()
@@ -397,3 +413,70 @@ class ChatKnowledgeService:
         if verifier_value <= 0:
             return round(answer_value, 4)
         return round(min(answer_value, verifier_value), 4)
+
+    def _runtime_logs(self, timeline: list[dict[str, Any]], fallback_input_count: int) -> list[dict[str, Any]]:
+        return [self._runtime_log(item, input_count=fallback_input_count) for item in timeline if isinstance(item, dict)]
+
+    def _runtime_log(self, item: dict[str, Any], *, stage: str | None = None, input_count: int | None = None) -> dict[str, Any]:
+        agent = str(item.get("agent", "RuntimeAgent"))
+        data = item.get("data", {}) if isinstance(item.get("data", {}), dict) else {}
+        return {
+            "agent": agent,
+            "status": str(item.get("status", "success")),
+            "message": str(item.get("message", "")),
+            "stage": stage or self._stage_for_runtime_agent(agent),
+            "score": item.get("confidence"),
+            "runtime_ms": item.get("runtime_ms", 0),
+            "started_at": item.get("started_at") or datetime.now(timezone.utc).isoformat(),
+            "ended_at": item.get("ended_at") or item.get("started_at") or datetime.now(timezone.utc).isoformat(),
+            "input_count": input_count,
+            "output_count": len(data),
+            "data": data,
+        }
+
+    def _stage_for_runtime_agent(self, agent: str) -> str:
+        stage_map = {
+            "IntentClassifierAgent": "intent",
+            "InputRouterAgent": "route",
+            "ContextBuilderAgent": "context",
+            "PlannerAgent": "plan",
+            "AgentRouterAgent": "agent_route",
+            "CitationAgent": "citation",
+            "MemoryAgent": "memory_agent",
+        }
+        return stage_map.get(agent, "runtime")
+
+    def _log_to_timeline(self, log: dict[str, Any], *, category: str) -> dict[str, Any]:
+        return {
+            "agent_id": "",
+            "agent": log.get("agent", "Agent"),
+            "category": category,
+            "status": log.get("status", "success"),
+            "message": log.get("message", ""),
+            "data": log.get("data", {}),
+            "confidence": log.get("score"),
+            "sources": log.get("data", {}).get("sources", []) if isinstance(log.get("data", {}), dict) else [],
+            "tool_calls": [],
+            "risk_level": "low",
+            "runtime_ms": log.get("runtime_ms", 0),
+            "started_at": log.get("started_at"),
+        }
+
+    def _timeline_tool_calls(self, timeline: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        calls: list[dict[str, Any]] = []
+        for item in timeline:
+            for call in item.get("tool_calls", []) or []:
+                if isinstance(call, dict):
+                    calls.append(call)
+        return calls
+
+    def _unique_agents(self, values: list[str]) -> list[str]:
+        output: list[str] = []
+        seen: set[str] = set()
+        for value in values:
+            value = value.strip()
+            if not value or value in seen:
+                continue
+            seen.add(value)
+            output.append(value)
+        return output

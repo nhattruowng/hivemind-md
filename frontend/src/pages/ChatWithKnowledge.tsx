@@ -17,7 +17,7 @@ import {
   type LucideIcon
 } from "lucide-react";
 import { FormEvent, useMemo, useState } from "react";
-import { chat, cleanupKnowledge, type AgentLog, type ChatResponse, type KnowledgeCleanupResponse } from "../api/client";
+import { chat, cleanupKnowledge, type AgentLog, type ChatResponse, type KnowledgeCleanupResponse, type RuntimeTimelineItem } from "../api/client";
 
 interface Message {
   role: "user" | "assistant";
@@ -325,6 +325,7 @@ function ThinkingBubble() {
 function AgentThinkingPanel({ loading, meta }: { loading: boolean; meta: ChatResponse | null }) {
   const roles = meta?.agent_roles?.length ? meta.agent_roles : thinkingRoles.map(({ stage, name, description }) => ({ stage, name, description }));
   const logs = meta?.agent_logs ?? [];
+  const runtimeTimeline = meta?.timeline ?? [];
   const planSteps = Array.isArray(meta?.plan?.steps) ? (meta?.plan.steps as Array<Record<string, unknown>>) : [];
   return (
     <section className="rounded border border-line bg-panel p-4 shadow-soft">
@@ -368,7 +369,21 @@ function AgentThinkingPanel({ loading, meta }: { loading: boolean; meta: ChatRes
         </div>
       ) : null}
 
-      {logs.length ? (
+      {runtimeTimeline.length ? (
+        <div className="mt-4">
+          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <Clock3 size={13} aria-hidden="true" />
+            Runtime
+          </div>
+          <div className="max-h-[360px] space-y-2 overflow-auto pr-1 scrollbar-thin">
+            {runtimeTimeline.map((item, index) => (
+              <RuntimeTimelineRow key={`${item.agent}-${index}`} item={item} />
+            ))}
+          </div>
+        </div>
+      ) : null}
+
+      {!runtimeTimeline.length && logs.length ? (
         <div className="mt-4">
           <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
             <Clock3 size={13} aria-hidden="true" />
@@ -382,6 +397,25 @@ function AgentThinkingPanel({ loading, meta }: { loading: boolean; meta: ChatRes
         </div>
       ) : null}
     </section>
+  );
+}
+
+function RuntimeTimelineRow({ item }: { item: RuntimeTimelineItem }) {
+  return (
+    <div className="rounded border border-line bg-ink p-3 text-xs">
+      <div className="grid grid-cols-[minmax(0,1fr)_56px] items-center gap-2">
+        <div className="min-w-0">
+          <div className="truncate font-semibold text-white">{item.agent}</div>
+          <p className="mt-1 line-clamp-2 leading-5 text-slate-400">{item.message}</p>
+        </div>
+        <div className="text-right font-semibold text-accent">{item.confidence != null ? `${Math.round(item.confidence * 100)}%` : item.status}</div>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-2 text-[11px] text-slate-500">
+        {item.category ? <span>{item.category}</span> : null}
+        {item.risk_level ? <span>{item.risk_level}</span> : null}
+        {item.runtime_ms != null ? <span>{formatRuntime(item.runtime_ms)}</span> : null}
+      </div>
+    </div>
   );
 }
 

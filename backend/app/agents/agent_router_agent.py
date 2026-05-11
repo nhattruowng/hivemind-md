@@ -14,6 +14,9 @@ IMPLEMENTED_RUNTIME_AGENTS = {
     "IntentClassifierAgent",
     "PlannerAgent",
     "AgentRouterAgent",
+    "ContextBuilderAgent",
+    "CitationAgent",
+    "MemoryAgent",
     "VerifierAgent",
     "RAGAgent",
 }

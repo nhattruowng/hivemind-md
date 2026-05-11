@@ -216,6 +216,31 @@ class PlatformPhase1Tests(unittest.TestCase):
         self.assertEqual(data["timeline"][0]["agent"], "PlannerAgent")
         self.assertIn("steps", data["result"]["data"])
 
+    def test_chat_endpoint_returns_chat_first_runtime_metadata(self) -> None:
+        from app.main import app
+
+        client = TestClient(app)
+        response = client.post(
+            "/api/chat",
+            json={
+                "message": "RAG là gì?",
+                "auto_refresh": False,
+                "category": "chat-auto",
+                "mode": "quick",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        timeline_agents = {item["agent"] for item in data["timeline"]}
+        self.assertIn("IntentClassifierAgent", timeline_agents)
+        self.assertIn("ContextBuilderAgent", timeline_agents)
+        self.assertIn("AgentRouterAgent", timeline_agents)
+        self.assertIn("CitationAgent", timeline_agents)
+        self.assertIn("MemoryAgent", timeline_agents)
+        self.assertIn("routing", data)
+        self.assertIn("context", data)
+        self.assertTrue(data["agents_used"])
+
 
 if __name__ == "__main__":
     unittest.main()

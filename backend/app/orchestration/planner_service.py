@@ -36,11 +36,19 @@ class PlannerRuntimeService:
                 "runtime_ms": route_result.get("runtime_ms", 0),
             }
         )
+        context_run = await self.runtime.execute_registered_agent(
+            "ContextBuilderAgent",
+            input_data={"message": message, "route": route_data},
+            user_id=user_id,
+            task_id=task_id,
+        )
+        timeline.append(context_run)
         plan_run = await self.runtime.execute_registered_agent(
             "PlannerAgent",
             input_data={
                 "message": message,
                 "route": route_data,
+                "context": context_run.get("data", {}),
                 "auto_refresh": auto_refresh,
                 "category": category,
                 "mode": mode,
@@ -65,6 +73,7 @@ class PlannerRuntimeService:
         return {
             "task_id": task_id,
             "intent": intent_run.get("data", {}),
+            "context": context_run.get("data", {}),
             "route": route_data,
             "plan": plan_run.get("data", {}),
             "routing": routing,
