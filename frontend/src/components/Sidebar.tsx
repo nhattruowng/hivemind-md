@@ -7,6 +7,7 @@ import {
   History,
   MessageSquareText,
   Network,
+  PanelsTopLeft,
   NotebookText,
   Settings,
   Sparkles,
@@ -17,6 +18,7 @@ import { NavLink } from "react-router-dom";
 const items = [
   { to: "/", label: "Bảng điều khiển", icon: Gauge },
   { to: "/builder", label: "Tạo tri thức", icon: WandSparkles },
+  { to: "/agent-studio", label: "Agent Studio", icon: PanelsTopLeft },
   { to: "/agents", label: "Giám sát tác nhân", icon: Network },
   { to: "/knowledge", label: "Khám phá tri thức", icon: Database },
   { to: "/chat", label: "Trò chuyện", icon: MessageSquareText },

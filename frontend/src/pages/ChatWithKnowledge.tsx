@@ -325,6 +325,7 @@ function ThinkingBubble() {
 function AgentThinkingPanel({ loading, meta }: { loading: boolean; meta: ChatResponse | null }) {
   const roles = meta?.agent_roles?.length ? meta.agent_roles : thinkingRoles.map(({ stage, name, description }) => ({ stage, name, description }));
   const logs = meta?.agent_logs ?? [];
+  const planSteps = Array.isArray(meta?.plan?.steps) ? (meta?.plan.steps as Array<Record<string, unknown>>) : [];
   return (
     <section className="rounded border border-line bg-panel p-4 shadow-soft">
       <div className="flex items-center justify-between gap-3">
@@ -346,6 +347,26 @@ function AgentThinkingPanel({ loading, meta }: { loading: boolean; meta: ChatRes
           </div>
         ))}
       </div>
+
+      {planSteps.length ? (
+        <div className="mt-4">
+          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <CheckCircle2 size={13} aria-hidden="true" />
+            Plan
+          </div>
+          <div className="space-y-2">
+            {planSteps.slice(0, 6).map((step, index) => (
+              <div key={`${String(step.id ?? index)}-${index}`} className="rounded border border-line bg-ink px-3 py-2 text-xs">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate font-semibold text-white">{String(step.name ?? step.action ?? "Step")}</span>
+                  <span className="rounded bg-panel px-2 py-0.5 text-[11px] text-slate-500">{String(step.agent ?? "agent")}</span>
+                </div>
+                {step.reason ? <p className="mt-1 line-clamp-2 text-slate-400">{String(step.reason)}</p> : null}
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {logs.length ? (
         <div className="mt-4">

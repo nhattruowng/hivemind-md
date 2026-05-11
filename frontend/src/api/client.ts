@@ -102,6 +102,10 @@ export interface ChatResponse {
   citations: Array<Record<string, unknown>>;
   verification: Record<string, unknown>;
   plan: Record<string, unknown>;
+  agents_used: string[];
+  tool_calls: Array<Record<string, unknown>>;
+  needs_approval: boolean;
+  approval_request?: Record<string, unknown> | null;
   token_estimate?: number | null;
   route: Record<string, unknown>;
   active_agents: number;
@@ -187,6 +191,78 @@ export interface WorkflowSuggestion {
   updated_at: string;
 }
 
+export interface PlatformAgent {
+  id: string;
+  user_id?: string | null;
+  name: string;
+  slug: string;
+  category: string;
+  description?: string | null;
+  role: string;
+  goal?: string | null;
+  system_prompt?: string | null;
+  default_model?: string | null;
+  temperature: number;
+  risk_level: "low" | "medium" | "high";
+  allowed_tools: string[];
+  input_schema: Record<string, unknown>;
+  output_schema: Record<string, unknown>;
+  evaluation_metrics: string[];
+  is_system: boolean;
+  is_active: boolean;
+  config: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateAgentPayload {
+  name: string;
+  category?: string;
+  description?: string;
+  role: string;
+  goal?: string;
+  system_prompt?: string;
+  default_model?: string;
+  temperature?: number;
+  risk_level?: "low" | "medium" | "high";
+  allowed_tools?: string[];
+  evaluation_metrics?: string[];
+  config?: Record<string, unknown>;
+}
+
+export interface RuntimeTimelineItem {
+  agent_id?: string;
+  agent: string;
+  category?: string;
+  status: string;
+  message: string;
+  data: Record<string, unknown>;
+  confidence?: number | null;
+  sources?: unknown[];
+  tool_calls?: Array<Record<string, unknown>>;
+  risk_level?: string;
+  runtime_ms?: number;
+}
+
+export interface AgentRuntimeResponse {
+  task_id: string;
+  agent: PlatformAgent;
+  result: RuntimeTimelineItem;
+  timeline: RuntimeTimelineItem[];
+}
+
+export interface PlanPreviewResponse {
+  task_id?: string | null;
+  intent: Record<string, unknown>;
+  route: Record<string, unknown>;
+  plan: Record<string, unknown>;
+  routing: Record<string, unknown>;
+  agents_used: string[];
+  confidence?: number | null;
+  needs_approval: boolean;
+  timeline: RuntimeTimelineItem[];
+}
+
 export interface ListAgentRunsParams {
   agent_name?: string;
   status?: string;
@@ -220,6 +296,26 @@ export const ollamaHealth = async () => {
 
 export const buildKnowledge = async (payload: BuildKnowledgePayload) => {
   const { data } = await apiClient.post<BuildKnowledgeResponse>("/api/agents/build-knowledge", payload);
+  return data;
+};
+
+export const listPlatformAgents = async () => {
+  const { data } = await apiClient.get<PlatformAgent[]>("/api/agents");
+  return data;
+};
+
+export const createPlatformAgent = async (payload: CreateAgentPayload) => {
+  const { data } = await apiClient.post<PlatformAgent>("/api/agents", payload);
+  return data;
+};
+
+export const testPlatformAgent = async (agentId: string, input: Record<string, unknown>) => {
+  const { data } = await apiClient.post<AgentRuntimeResponse>(`/api/agents/${agentId}/test`, { input });
+  return data;
+};
+
+export const previewChatPlan = async (message: string) => {
+  const { data } = await apiClient.post<PlanPreviewResponse>("/api/chat/plan-preview", { message });
   return data;
 };
 

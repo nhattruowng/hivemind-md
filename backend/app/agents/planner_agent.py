@@ -64,6 +64,7 @@ class PlannerAgent(BaseAgent):
             "workflow": workflow,
             "mode": mode,
             "category": category,
+            "execution_mode": "sequential",
             "risk_level": risk_level,
             "risk_reasons": risk_reasons,
             "approval_required": approval_required,
@@ -112,53 +113,89 @@ class PlannerAgent(BaseAgent):
     ) -> list[dict[str, Any]]:
         steps: list[dict[str, Any]] = [
             {
+                "id": "step_1",
                 "step": 1,
+                "name": "Classify and route",
                 "agent": "InputRouterAgent",
                 "action": "classify_and_route",
+                "input": {},
+                "depends_on": [],
+                "can_run_parallel": False,
+                "risk_level": "low",
                 "reason": "Classify the request and choose candidate knowledge folders.",
             }
         ]
         if approval_required:
             steps.append(
                 {
+                    "id": f"step_{len(steps) + 1}",
                     "step": len(steps) + 1,
+                    "name": "Request approval",
                     "agent": "PolicyAgent",
                     "action": "request_human_approval",
+                    "input": {},
+                    "depends_on": [steps[-1]["id"]] if steps else [],
+                    "can_run_parallel": False,
+                    "risk_level": "high",
                     "reason": "High-risk actions must be approved before tool execution.",
                 }
             )
         if has_route:
             steps.append(
                 {
+                    "id": f"step_{len(steps) + 1}",
                     "step": len(steps) + 1,
+                    "name": "Retrieve and answer",
                     "agent": "AnswerAgent",
                     "action": "retrieve_and_answer",
+                    "input": {},
+                    "depends_on": [steps[-1]["id"]] if steps else [],
+                    "can_run_parallel": False,
+                    "risk_level": "low",
                     "reason": "Use routed knowledge and vector chunks as answer context.",
                 }
             )
         if refresh_allowed:
             steps.append(
                 {
+                    "id": f"step_{len(steps) + 1}",
                     "step": len(steps) + 1,
+                    "name": "Refresh local knowledge",
                     "agent": "AutoRefreshAgent",
                     "action": "refresh_local_knowledge_if_needed",
+                    "input": {},
+                    "depends_on": [steps[-1]["id"]] if steps else [],
+                    "can_run_parallel": False,
+                    "risk_level": "low",
                     "reason": "Local search/crawl is allowed when retrieved knowledge is insufficient.",
                 }
             )
         if intent in {"qa", "research", "general", "coding"}:
             steps.append(
                 {
+                    "id": f"step_{len(steps) + 1}",
                     "step": len(steps) + 1,
+                    "name": "Verify answer",
                     "agent": "VerifierAgent",
                     "action": "verify_grounding",
+                    "input": {},
+                    "depends_on": [steps[-1]["id"]] if steps else [],
+                    "can_run_parallel": False,
+                    "risk_level": "low",
                     "reason": "Check answer support, citations, missing points, and risk before final response.",
                 }
             )
         steps.append(
             {
+                "id": f"step_{len(steps) + 1}",
                 "step": len(steps) + 1,
+                "name": "Write session memory",
                 "agent": "ChatMemoryAgent",
                 "action": "write_session_memory",
+                "input": {},
+                "depends_on": [steps[-1]["id"]] if steps else [],
+                "can_run_parallel": False,
+                "risk_level": "low",
                 "reason": "Persist the final turn and audit metadata.",
             }
         )
@@ -169,9 +206,15 @@ class PlannerAgent(BaseAgent):
         if approval_required:
             steps.append(
                 {
+                    "id": "step_1",
                     "step": 1,
+                    "name": "Request approval",
                     "agent": "PolicyAgent",
                     "action": "request_human_approval",
+                    "input": {},
+                    "depends_on": [],
+                    "can_run_parallel": False,
+                    "risk_level": "high",
                     "reason": "High-risk build requests must be approved before execution.",
                 }
             )
@@ -186,9 +229,15 @@ class PlannerAgent(BaseAgent):
         ):
             steps.append(
                 {
+                    "id": f"step_{len(steps) + 1}",
                     "step": len(steps) + 1,
+                    "name": action.replace("_", " ").title(),
                     "agent": agent,
                     "action": action,
+                    "input": {},
+                    "depends_on": [steps[-1]["id"]] if steps else [],
+                    "can_run_parallel": False,
+                    "risk_level": "low",
                     "reason": reason,
                 }
             )

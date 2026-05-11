@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { AgentMonitor } from "./pages/AgentMonitor";
+import { AgentStudio } from "./pages/AgentStudio";
 import { AgentRuns } from "./pages/AgentRuns";
 import { ChatWithKnowledge } from "./pages/ChatWithKnowledge";
 import { Dashboard } from "./pages/Dashboard";
@@ -19,6 +20,7 @@ export default function App() {
         <Route index element={<Dashboard />} />
         <Route path="/builder" element={<KnowledgeBuilder />} />
         <Route path="/agents" element={<AgentMonitor />} />
+        <Route path="/agent-studio" element={<AgentStudio />} />
         <Route path="/knowledge" element={<KnowledgeExplorer />} />
         <Route path="/chat" element={<ChatWithKnowledge />} />
         <Route path="/self-improvement" element={<SelfImprovementDashboard />} />

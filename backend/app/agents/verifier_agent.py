@@ -84,6 +84,7 @@ class VerifierAgent(BaseAgent):
                 "verified": verified,
                 "confidence": round(verifier_confidence, 4),
                 "grounding_score": round(grounding_score, 4),
+                "faithfulness_score": round(grounding_score, 4),
                 "unsupported_claims": unsupported_claims,
                 "missing_points": missing_points,
                 "risk_level": risk_level,

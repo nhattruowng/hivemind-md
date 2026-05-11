@@ -26,6 +26,10 @@ class ChatResponse(BaseModel):
     citations: list[dict[str, Any]] = Field(default_factory=list)
     verification: dict[str, Any] = Field(default_factory=dict)
     plan: dict[str, Any] = Field(default_factory=dict)
+    agents_used: list[str] = Field(default_factory=list)
+    tool_calls: list[dict[str, Any]] = Field(default_factory=list)
+    needs_approval: bool = False
+    approval_request: dict[str, Any] | None = None
     token_estimate: int | None = None
     route: dict[str, Any] = Field(default_factory=dict)
     active_agents: int = 0
