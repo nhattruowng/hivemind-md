@@ -5,6 +5,31 @@ Thumbs.db
 .vscode/
 *.swp
 
+# Secrets / env
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+
+# Python / backend
+*.pyc
+*.log
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+venv/
+.venv/
+hivemind.db
+backend/hivemind.db
+backend/data/
+backend/knowledge/
+backend/knowledge/**
+backend/vector_store/*
+!backend/vector_store/.gitkeep
+
 # Java / Maven
 target/
 *.class
@@ -16,6 +41,8 @@ dist/
 build/
 coverage/
 *.tsbuildinfo
+frontend/node_modules/
+frontend/dist/
 apps/desktop/node_modules/
 apps/desktop/dist/
 
@@ -28,14 +55,5 @@ logs/
 *.sqlite
 *.sqlite3
 
-# Secrets / env
-.env
-.env.*
-!.env.example
-*.pem
-*.p12
-*.pfx
-
 # Tauri / Rust build outputs
 apps/desktop/src-tauri/target/
-target/

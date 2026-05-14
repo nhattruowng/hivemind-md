@@ -1,0 +1,10 @@
+# Normalize text file endings in the repo; keep Windows-friendly checkouts.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+

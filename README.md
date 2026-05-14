@@ -1,73 +1,29 @@
-# BizFlow Local Agent
+# HiveMind MD
 
-BizFlow Local Agent is a local-first AI agent architecture prototype for desktop productivity, memory, tool execution, workflow automation, approval gates, and auditability.
+HiveMind MD is an open-source, local-first Markdown knowledge manager with an AI copilot. It combines a personal knowledge base, citation-aware RAG, and iterative agentic workflows.
 
-This repository currently contains:
+This repository now also includes the **BizFlow Local Agent** scaffold: a production-oriented local-first AI agent architecture with Agent Runtime, Memory Engine, Tool/Permission/Approval systems, Workflow Engine, Audit Log, and a desktop UI prototype.
 
-- Java 21 + Spring Boot 3 local core skeleton.
-- SQLite/Flyway migrations for Agent Runtime, Tool/Approval/Audit, and Workflow Engine.
-- Workflow Engine service/controller/entity/repository skeleton.
-- React + TypeScript frontend skeleton under `apps/desktop`.
-- Dark-mode Workflow Builder UI using React Flow.
-- Approval Inbox and Agent Studio skeletons.
-- Architecture and implementation docs.
+## BizFlow Local Agent Scaffold
 
-> Current status: this is an implementation scaffold, not a production release. The Tauri shell is planned but not yet scaffolded as `src-tauri`.
+BizFlow is being developed in this repository as a parallel local-first AI agent foundation. The scaffold is intentionally modular so the existing HiveMind MD application can continue to evolve while BizFlow modules are implemented and tested independently.
 
-## Repository Structure
+| Area | Location | Purpose |
+|---|---|---|
+| Java local core | `pom.xml`, `src/main/java/com/bizflow` | Spring Boot 3 / Java 21 backend skeleton for agent runtime, workflow, approvals, permissions, tools, audit, and model routing |
+| Database migrations | `src/main/resources/db/migration` | Flyway SQLite migrations for agent runtime and workflow engine tables |
+| Desktop UI prototype | `apps/desktop` | React + TypeScript + Tailwind UI scaffold with Workflow Builder-first structure |
+| Workflow docs | `docs/workflow-engine.md` | Workflow Engine design, DSL, API, status model, rollback/replay concepts |
+| Frontend docs | `docs/frontend-ui.md` | Desktop UI architecture, routes, state, components, and implementation notes |
+| Setup docs | `docs/setup-run.md` | Detailed setup and run instructions for both existing HiveMind and BizFlow scaffold |
+| Roadmap | `docs/roadmap.md` | Phased implementation plan |
 
-```text
-.
-├─ pom.xml
-├─ src/
-│  ├─ main/java/com/bizflow/
-│  │  ├─ agent_runtime/
-│  │  ├─ approvals/
-│  │  ├─ audit/
-│  │  ├─ common/
-│  │  ├─ models/
-│  │  ├─ permissions/
-│  │  ├─ tools/
-│  │  └─ workflow/
-│  ├─ main/resources/
-│  │  ├─ application.yml
-│  │  └─ db/migration/
-│  └─ test/java/com/bizflow/
-├─ apps/
-│  └─ desktop/
-│     ├─ package.json
-│     ├─ vite.config.ts
-│     ├─ tailwind.config.ts
-│     └─ src/
-└─ docs/
-```
+### Run BizFlow Java Core
 
-## Main Modules
+Requirements:
 
-| Module | Purpose |
-|---|---|
-| `agent_runtime` | Agent run/step/trace persistence skeleton |
-| `tools` | Tool definitions, permissions, call logs |
-| `permissions` | Permission policy persistence |
-| `approvals` | Approval request persistence/service |
-| `audit` | Audit log persistence |
-| `workflow` | Workflow definition, run, step, scheduler, replay, rollback skeleton |
-| `apps/desktop` | React UI shell, Workflow Builder, Approval Inbox, Agent Studio skeleton |
-
-## Prerequisites
-
-| Tool | Recommended version | Notes |
-|---|---:|---|
-| Java | 21 | Required for Spring Boot backend |
-| Maven | 3.9+ | Not included yet as Maven wrapper |
-| Node.js | 20+ | Required for frontend |
-| npm | 10+ | Used by `apps/desktop/package.json` |
-| SQLite | bundled through JDBC | Runtime DB is created locally |
-| Ollama | optional | Future model-router integration |
-
-## Backend Setup
-
-From the repository root:
+- Java 21
+- Maven 3.9+
 
 ```powershell
 $env:JAVA_HOME='C:\Program Files\Java\jdk-21'
@@ -75,103 +31,182 @@ mvn test
 mvn spring-boot:run
 ```
 
-Default backend URL:
+The Java core uses SQLite JDBC and Flyway migrations. By default it is prepared for local development and can be connected later to the Tauri desktop shell.
 
-```text
-http://127.0.0.1:8787
-```
+### Run BizFlow Desktop UI Prototype
 
-Default SQLite DB path:
+Requirements:
 
-```text
-./data/bizflow.db
-```
-
-Override with:
+- Node.js 20+
+- npm
 
 ```powershell
-$env:BIZFLOW_DB_PATH='D:\bizflow-data\bizflow.db'
-$env:BIZFLOW_PORT='8787'
-mvn spring-boot:run
-```
-
-## Frontend Setup
-
-From `apps/desktop`:
-
-```powershell
+cd apps/desktop
 npm install
 npm run dev
 ```
 
-Frontend dev URL:
+The desktop UI prototype is currently a Vite/React app. Tauri v2 shell integration is planned as the next packaging step.
+
+### BizFlow Documentation
+
+Start here:
+
+- [Detailed setup and run guide](docs/setup-run.md)
+- [Frontend UI design and implementation notes](docs/frontend-ui.md)
+- [Workflow Engine design](docs/workflow-engine.md)
+- [Implementation roadmap](docs/roadmap.md)
+
+## Architecture
+
+HiveMind MD is split into:
+
+- `backend/`: FastAPI backend, knowledge ingestion, vector search, agent orchestration, and local Ollama integration.
+- `frontend/`: React/Vite frontend for Markdown authoring, graph views, semantic search, and assistant interactions.
+- `docs/`: Architecture and product documentation.
+- `src/`: BizFlow Java local core scaffold.
+- `apps/desktop/`: BizFlow desktop UI prototype.
+
+High-level flow:
 
 ```text
-http://127.0.0.1:5173
+User
+  ↓
+Frontend / Desktop UI
+  ↓
+Local API
+  ↓
+Knowledge / Memory / Agent / Workflow modules
+  ↓
+SQLite + vector store + local files
+  ↓
+Local model first, cloud model optional when enabled
 ```
 
-If the backend runs on a different URL:
+## Core Principles
+
+| Principle | Implementation direction |
+|---|---|
+| Local-first | User data stays on the local machine by default |
+| Markdown-native | Notes remain readable and portable |
+| Citation-aware AI | Answers should trace back to source notes, files, chunks, or tool outputs |
+| Secure by default | Dangerous actions require permission and approval |
+| Auditable | Agent, memory, tool, workflow, and approval activity should be traceable |
+| Extensible | Tools, workflows, connectors, and model providers are designed as modular capabilities |
+
+## Existing HiveMind MD Setup
+
+### Requirements
+
+- Python 3.11+
+- Node.js 20+
+- Ollama for local LLM execution
+
+### Backend
 
 ```powershell
-$env:VITE_BIZFLOW_API_URL='http://127.0.0.1:8787'
+cd backend
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+### Frontend
+
+```powershell
+cd frontend
+npm install
 npm run dev
 ```
 
-## Frontend Build
+### Ollama
+
+Install Ollama and pull a local model:
 
 ```powershell
-cd apps/desktop
-npm run build
+ollama pull llama3.1
+ollama pull nomic-embed-text
 ```
 
-## Current API Surface
+## Docker
 
-Workflow APIs currently scaffolded:
+If Docker is available, the existing HiveMind stack can be started with:
+
+```powershell
+docker compose up --build
+```
+
+## Knowledge Refresh
+
+HiveMind supports local knowledge ingestion and semantic retrieval. Source documents and generated indexes are kept out of Git by default:
+
+- `backend/knowledge/`
+- `backend/vector_store/`
+- local SQLite files
+
+## Agent and Workflow Direction
+
+BizFlow extends the repository with a stricter agent architecture:
 
 ```text
-POST   /api/workflows
-GET    /api/workflows
-GET    /api/workflows/{workflowId}
-PUT    /api/workflows/{workflowId}
-DELETE /api/workflows/{workflowId}
-POST   /api/workflows/{workflowId}/activate
-POST   /api/workflows/{workflowId}/pause
-POST   /api/workflows/{workflowId}/clone
-GET    /api/workflows/{workflowId}/versions
-
-POST   /api/workflows/{workflowId}/run
-GET    /api/workflows/runs/{runId}
-GET    /api/workflows/runs/{runId}/timeline
-POST   /api/workflows/runs/{runId}/pause
-POST   /api/workflows/runs/{runId}/resume
-POST   /api/workflows/runs/{runId}/cancel
-POST   /api/workflows/runs/{runId}/retry
-POST   /api/workflows/runs/{runId}/rollback
-
-GET    /api/approvals
-GET    /api/approvals/{approvalId}
-POST   /api/approvals/{approvalId}/approve
-POST   /api/approvals/{approvalId}/reject
-POST   /api/approvals/{approvalId}/modify-and-approve
+AgentOrchestrator
+  ↓
+Intent Router
+  ↓
+Context Builder
+  ↓
+Planner
+  ↓
+Permission / Approval Gate
+  ↓
+Executor
+  ↓
+Verifier
+  ↓
+Response Composer
+  ↓
+Audit Log
 ```
 
-## Important Docs
+Workflow execution follows:
 
-- [Workflow Engine](docs/workflow-engine.md)
-- [Setup and Run Guide](docs/setup-run.md)
-- [Frontend UI Guide](docs/frontend-ui.md)
-- [Project Roadmap](docs/roadmap.md)
+```text
+Workflow Definition
+  ↓
+Workflow Runner
+  ↓
+Step Executor
+  ↓
+Tool / Agent / Memory / Model Step
+  ↓
+Retry / Approval / Rollback
+  ↓
+Timeline + Replay Debug
+```
 
-## Verification Notes
+## Repository Layout
 
-This workspace did not have Maven in `PATH` during generation, so backend tests were not executed locally here. Frontend dependencies were not installed yet, so frontend build was not executed either. The repository includes the commands needed to verify once Maven and npm dependencies are available.
+```text
+.
+├── backend/                  # Existing HiveMind FastAPI backend
+├── frontend/                 # Existing HiveMind React frontend
+├── src/                      # BizFlow Java Spring Boot local core scaffold
+├── apps/
+│   └── desktop/              # BizFlow React desktop UI prototype
+├── docs/                     # Architecture, setup, workflow, UI docs
+├── docker-compose.yml
+├── pom.xml                   # BizFlow Java core build
+└── README.md
+```
 
-## Next Engineering Tasks
+## Development Notes
 
-1. Add Maven wrapper: `mvn -N wrapper:wrapper`.
-2. Add Tauri v2 `src-tauri` shell under `apps/desktop`.
-3. Wire Workflow `StepExecutor` to real Tool Router and Permission Engine.
-4. Implement Memory Engine APIs and UI pages.
-5. Implement Model Router adapters for Ollama/llama.cpp.
-6. Add integration tests with temporary SQLite DB.
-7. Add GitHub Actions CI for backend and frontend.
+- Keep existing HiveMind MD modules intact.
+- Add BizFlow modules behind clear package/folder boundaries.
+- Never commit local memory databases, vector indexes, secrets, generated logs, or user data.
+- Prefer local models for sensitive data. Cloud model routing must remain opt-in.
+
+## License
+
+See [LICENSE](LICENSE).
