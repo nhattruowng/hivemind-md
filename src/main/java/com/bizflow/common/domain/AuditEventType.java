@@ -1,0 +1,16 @@
+package com.bizflow.common.domain;
+
+public enum AuditEventType {
+    AGENT_RUN_STARTED,
+    INTENT_CLASSIFIED,
+    PLAN_CREATED,
+    PERMISSION_CHECKED,
+    APPROVAL_REQUESTED,
+    APPROVAL_DECIDED,
+    TOOL_CALLED,
+    TOOL_SUCCEEDED,
+    TOOL_FAILED,
+    MODEL_CALLED,
+    VERIFIER_CHECKED,
+    RESPONSE_GENERATED
+}
