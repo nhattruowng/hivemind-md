@@ -1,4 +1,4 @@
-# Self-Improvement Loop
+# Vòng Lặp Tự Cải Thiện
 
 Self-Improvement Loop giúp HiveMind MD ghi lại mỗi lần agent chạy, tự đánh giá kết quả, rút ra bài học tái sử dụng và đề xuất cải tiến prompt hoặc workflow theo cơ chế kiểm soát an toàn.
 
@@ -34,7 +34,7 @@ Các bảng mới:
 
 Nếu dự án chưa có migration system, `app.database.init_db()` tự tạo bảng khi backend startup.
 
-## Safety Policy
+## Chính Sách An Toàn
 
 Mặc định:
 
@@ -59,7 +59,7 @@ ALLOW_AUTO_CODE_PATCH=false
 REFLECTION_SCORE_THRESHOLD=42
 ```
 
-## API Endpoints
+## API Endpoint
 
 - `GET /api/self-improvement/summary`
 - `GET /api/self-improvement/runs`

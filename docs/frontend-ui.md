@@ -1,40 +1,35 @@
-# Frontend UI Guide
+# Tài Liệu Desktop UI BizFlow
 
-## 1. Stack
+Tài liệu này mô tả UI desktop cho BizFlow Local Agent. Mục tiêu là tạo một app developer-focused, dark mode, không chỉ là chatbot, mà còn có Workflow Builder, Approval Inbox, Memory, Tool Manager, Agent Studio và Audit Log.
 
-| Layer | Technology |
-|---|---|
-| App shell | Tauri v2 planned |
-| Frontend | React + TypeScript |
-| Build | Vite |
-| Styling | Tailwind CSS |
-| Server state | TanStack Query |
-| Client UI state | Zustand |
-| Workflow canvas | React Flow |
-| Icons | lucide-react |
-| Toast | Sonner |
+## 1. Công Nghệ Sử Dụng
 
-## 2. Current UI
+| Lớp | Công nghệ | Lý do chọn |
+|---|---|---|
+| Desktop shell | Tauri v2, planned | nhẹ, native, hợp với local-first |
+| Frontend | React + TypeScript | ecosystem mạnh, type safety |
+| Build | Vite | nhanh, cấu hình đơn giản |
+| Styling | Tailwind CSS | token hoá UI nhanh, hợp dark mode |
+| Server state | TanStack Query | cache API, loading/error state rõ |
+| Client state | Zustand | nhẹ, dễ tách store theo feature |
+| Workflow canvas | React Flow | kéo-thả node/edge, custom node tốt |
+| Icons | lucide-react | nhất quán, nhẹ |
+| Toast | Sonner | feedback nhanh |
 
-The current frontend scaffold includes:
+## 2. UI Hiện Có
 
-- AppShell
-- Sidebar
-- TopBar
-- StatusBar
-- CommandPalette placeholder
-- Workflow Builder page
-- React Flow canvas
-- Node palette
-- Custom workflow node
-- Step configuration panel
-- Workflow JSON preview
-- Validation panel
-- Run test panel
-- Approval Inbox page
-- Agent Studio skeleton
+| Thành phần | Trạng thái | Ghi chú |
+|---|---|---|
+| AppShell | đã có | Sidebar, TopBar, Main, StatusBar |
+| Sidebar | đã có | điều hướng chính |
+| TopBar | đã có | workspace/search/model status placeholder |
+| StatusBar | đã có | core/model/vector/audit status placeholder |
+| CommandPalette | placeholder | cần nối shortcut `Ctrl/Cmd+K` |
+| Workflow Builder | đã có skeleton | React Flow canvas, palette, config, JSON preview |
+| Approval Inbox | đã có skeleton | danh sách/detail, approve/reject placeholder |
+| Agent Studio | đã có skeleton | tabs/khung test tool/prompt |
 
-## 3. Frontend Folder Structure
+## 3. Cấu Trúc Frontend
 
 ```text
 apps/desktop/src/
@@ -53,24 +48,38 @@ apps/desktop/src/
   utils/
 ```
 
-## 4. Workflow Builder Files
+## 4. Workflow Builder
 
-| File | Purpose |
+| File | Vai trò |
 |---|---|
-| `WorkflowBuilderPage.tsx` | Builder layout |
+| `WorkflowBuilderPage.tsx` | layout tổng cho builder |
 | `WorkflowCanvas.tsx` | React Flow canvas |
-| `WorkflowNode.tsx` | Custom workflow node |
-| `NodePalette.tsx` | Draggable node palette |
-| `StepConfigPanel.tsx` | Step editing panel |
-| `WorkflowValidationPanel.tsx` | DSL validation warnings/errors |
-| `WorkflowJsonPreview.tsx` | Readable workflow JSON |
-| `WorkflowRunTestPanel.tsx` | Dry-run/test panel |
-| `workflow.types.ts` | Workflow TypeScript types |
-| `workflow.api.ts` | Workflow API client |
+| `WorkflowNode.tsx` | custom node UI |
+| `NodePalette.tsx` | palette kéo-thả node |
+| `StepConfigPanel.tsx` | panel chỉnh cấu hình step |
+| `WorkflowValidationPanel.tsx` | cảnh báo/lỗi validation DSL |
+| `WorkflowJsonPreview.tsx` | preview workflow JSON |
+| `WorkflowRunTestPanel.tsx` | panel dry-run/test |
+| `workflow.types.ts` | TypeScript type cho workflow |
+| `workflow.api.ts` | API client |
 | `workflow.queries.ts` | TanStack Query hooks |
-| `workflow.store.ts` | Zustand builder state |
+| `workflow.store.ts` | Zustand state cho builder |
 
-## 5. Workflow Builder UX
+## 5. Palette Node
+
+| Node | Mục đích | Risk mặc định |
+|---|---|---|
+| Tool Call | gọi tool đã đăng ký | phụ thuộc tool |
+| Agent Task | giao task cho agent runtime | medium |
+| Condition | rẽ nhánh logic | low |
+| Loop | lặp qua danh sách/input | medium |
+| Approval | chờ user duyệt | low |
+| Delay | chờ theo thời gian | low |
+| Notification | báo cho user | low |
+| Memory Search | tìm memory/context | low-medium |
+| Model Call | gọi local/cloud model | medium |
+
+## 6. Layout Workflow Builder
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
@@ -83,33 +92,47 @@ apps/desktop/src/
 └──────────────┴──────────────────────────────┴───────────────┘
 ```
 
-## 6. State Management
+## 7. Quản Lý State
 
-| State type | Tool |
-|---|---|
-| Server state | TanStack Query |
-| Workflow builder local draft | Zustand |
-| Global UI state | Zustand |
-| Future forms | React Hook Form + Zod |
+| Loại state | Công cụ | Ví dụ |
+|---|---|---|
+| Server state | TanStack Query | workflow list, approval list, run timeline |
+| UI state global | Zustand | sidebar collapsed, command palette open, theme |
+| Builder draft | Zustand | nodes, edges, selected node, dirty state |
+| Form state | React Hook Form + Zod, planned | step config, permission policy, approval modify |
 
-## 7. Query Keys
+## 8. Query Key
 
 ```ts
 workflowKeys.all
 workflowKeys.lists()
 workflowKeys.detail(workflowId)
+workflowKeys.run(runId)
+workflowKeys.timeline(runId)
 
 approvalKeys.all
 approvalKeys.list()
 approvalKeys.detail(approvalId)
 ```
 
-## 8. Next UI Tasks
+## 9. UX Quy Định
 
-1. Add router integration.
-2. Add real route pages for Dashboard, Chat, Memory, Tools, Models, Audit, Settings.
-3. Add CodeMirror JSON editor.
-4. Add form validation with React Hook Form + Zod.
-5. Add Tauri shell and native commands.
-6. Add Playwright screenshot tests.
+| Quy định | Lý do |
+|---|---|
+| Dark mode mặc định | hợp developer tool và desktop app |
+| Risk badge luôn hiện với action nguy hiểm | user phải thấy rủi ro trước khi duyệt |
+| Không chỉ dùng màu để báo risk | hỗ trợ accessibility |
+| Delete/write/shell phải có confirm/approval rõ | tránh agent tự ý hành động |
+| JSON preview readonly mặc định | tránh user không kỹ thuật làm hỏng DSL |
+| Developer mode mới cho sửa JSON trực tiếp | cân bằng power user và an toàn |
 
+## 10. Việc Cần Làm Tiếp
+
+| Việc | Ưu tiên |
+|---|---|
+| Thêm router thật cho Dashboard, Chat, Memory, Tools, Models, Audit, Settings | cao |
+| Nối Workflow Builder với API save/run/test | cao |
+| Thêm CodeMirror JSON editor | trung bình |
+| Thêm React Hook Form + Zod cho step config | cao |
+| Thêm Tauri shell và native commands | cao |
+| Thêm Playwright screenshot/e2e tests | trung bình |
