@@ -9,23 +9,17 @@ import com.bizflow.workflow.repository.WorkflowReplayRunRepository;
 import com.bizflow.workflow.repository.WorkflowRunContextRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class WorkflowReplayService {
     private final WorkflowRunner workflowRunner;
     private final WorkflowReplayRunRepository replayRunRepository;
     private final WorkflowRunContextRepository contextRepository;
     private final ObjectMapper objectMapper;
-
-    public WorkflowReplayService(WorkflowRunner workflowRunner, WorkflowReplayRunRepository replayRunRepository,
-                                 WorkflowRunContextRepository contextRepository, ObjectMapper objectMapper) {
-        this.workflowRunner = workflowRunner;
-        this.replayRunRepository = replayRunRepository;
-        this.contextRepository = contextRepository;
-        this.objectMapper = objectMapper;
-    }
 
     @Transactional
     public WorkflowRun replayFromStep(String parentRunId, String stepRunId, ReplayStepRequest request) {

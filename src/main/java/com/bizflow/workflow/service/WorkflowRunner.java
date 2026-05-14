@@ -27,10 +27,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class WorkflowRunner {
     private final WorkflowRepository workflowRepository;
     private final WorkflowRunRepository runRepository;
@@ -40,20 +42,6 @@ public class WorkflowRunner {
     private final StepExecutor stepExecutor;
     private final WorkflowAuditService auditService;
     private final ObjectMapper objectMapper;
-
-    public WorkflowRunner(WorkflowRepository workflowRepository, WorkflowRunRepository runRepository,
-                          WorkflowStepRepository stepRepository, WorkflowStepRunRepository stepRunRepository,
-                          ApprovalRequestRepository approvalRepository, StepExecutor stepExecutor,
-                          WorkflowAuditService auditService, ObjectMapper objectMapper) {
-        this.workflowRepository = workflowRepository;
-        this.runRepository = runRepository;
-        this.stepRepository = stepRepository;
-        this.stepRunRepository = stepRunRepository;
-        this.approvalRepository = approvalRepository;
-        this.stepExecutor = stepExecutor;
-        this.auditService = auditService;
-        this.objectMapper = objectMapper;
-    }
 
     @Transactional
     public WorkflowRun startRun(String workflowId, RunWorkflowRequest request, WorkflowTriggerType triggerType) {

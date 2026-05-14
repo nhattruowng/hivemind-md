@@ -22,10 +22,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class WorkflowService {
     private final WorkflowRepository workflowRepository;
     private final WorkflowStepRepository stepRepository;
@@ -33,17 +35,6 @@ public class WorkflowService {
     private final WorkflowTriggerRepository triggerRepository;
     private final WorkflowAuditService auditService;
     private final ObjectMapper objectMapper;
-
-    public WorkflowService(WorkflowRepository workflowRepository, WorkflowStepRepository stepRepository,
-                           WorkflowVersionRepository versionRepository, WorkflowTriggerRepository triggerRepository,
-                           WorkflowAuditService auditService, ObjectMapper objectMapper) {
-        this.workflowRepository = workflowRepository;
-        this.stepRepository = stepRepository;
-        this.versionRepository = versionRepository;
-        this.triggerRepository = triggerRepository;
-        this.auditService = auditService;
-        this.objectMapper = objectMapper;
-    }
 
     @Transactional
     public Workflow createWorkflow(CreateWorkflowRequest request) {

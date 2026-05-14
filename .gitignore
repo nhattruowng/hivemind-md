@@ -34,6 +34,7 @@ backend/vector_store/*
 target/
 *.class
 .mvn/timing.properties
+.tooling/
 
 # Node / frontend
 node_modules/

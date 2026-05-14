@@ -10,24 +10,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class EventTriggerManager {
     private final WorkflowEventBindingRepository bindingRepository;
     private final WorkflowRunner workflowRunner;
     private final ObjectMapper objectMapper;
     private final ApplicationEventPublisher eventPublisher;
-
-    public EventTriggerManager(WorkflowEventBindingRepository bindingRepository, WorkflowRunner workflowRunner,
-                               ObjectMapper objectMapper, ApplicationEventPublisher eventPublisher) {
-        this.bindingRepository = bindingRepository;
-        this.workflowRunner = workflowRunner;
-        this.objectMapper = objectMapper;
-        this.eventPublisher = eventPublisher;
-    }
 
     @Transactional
     public WorkflowEventBinding registerBinding(String workflowId, EventBindingRequest request) {

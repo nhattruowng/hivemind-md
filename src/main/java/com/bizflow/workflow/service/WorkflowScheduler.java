@@ -11,22 +11,18 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class WorkflowScheduler {
     private final WorkflowScheduleRepository scheduleRepository;
     private final WorkflowRunner workflowRunner;
     private final ObjectMapper objectMapper;
-
-    public WorkflowScheduler(WorkflowScheduleRepository scheduleRepository, WorkflowRunner workflowRunner, ObjectMapper objectMapper) {
-        this.scheduleRepository = scheduleRepository;
-        this.workflowRunner = workflowRunner;
-        this.objectMapper = objectMapper;
-    }
 
     @Transactional
     public WorkflowSchedule registerSchedule(String workflowId, ScheduleRequest request) {

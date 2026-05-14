@@ -1,10 +1,19 @@
 package com.bizflow.workflow.domain;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@Accessors(chain = true)
 @Entity
 @Table(name = "workflow_replay_runs")
 public class WorkflowReplayRun {
@@ -17,19 +26,4 @@ public class WorkflowReplayRun {
     private String inputOverrideJson;
     private String createdBy;
     private String createdAt;
-
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-    public String getParentRunId() { return parentRunId; }
-    public void setParentRunId(String parentRunId) { this.parentRunId = parentRunId; }
-    public String getReplayRunId() { return replayRunId; }
-    public void setReplayRunId(String replayRunId) { this.replayRunId = replayRunId; }
-    public String getFromStepRunId() { return fromStepRunId; }
-    public void setFromStepRunId(String fromStepRunId) { this.fromStepRunId = fromStepRunId; }
-    public String getInputOverrideJson() { return inputOverrideJson; }
-    public void setInputOverrideJson(String inputOverrideJson) { this.inputOverrideJson = inputOverrideJson; }
-    public String getCreatedBy() { return createdBy; }
-    public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
-    public String getCreatedAt() { return createdAt; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 }

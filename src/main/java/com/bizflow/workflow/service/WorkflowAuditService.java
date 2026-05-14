@@ -7,17 +7,14 @@ import com.bizflow.workflow.repository.WorkflowAuditEventRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class WorkflowAuditService {
     private final WorkflowAuditEventRepository repository;
     private final ObjectMapper objectMapper;
-
-    public WorkflowAuditService(WorkflowAuditEventRepository repository, ObjectMapper objectMapper) {
-        this.repository = repository;
-        this.objectMapper = objectMapper;
-    }
 
     public WorkflowAuditEvent logEvent(String workflowId, String runId, String stepRunId, String eventType,
                                        String status, String message, RiskLevel riskLevel, Object payload) {

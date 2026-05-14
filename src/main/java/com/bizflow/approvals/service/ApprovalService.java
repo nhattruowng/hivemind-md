@@ -11,20 +11,16 @@ import com.bizflow.workflow.service.WorkflowAuditService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class ApprovalService {
     private final ApprovalRequestRepository repository;
     private final ObjectMapper objectMapper;
     private final WorkflowAuditService auditService;
-
-    public ApprovalService(ApprovalRequestRepository repository, ObjectMapper objectMapper, WorkflowAuditService auditService) {
-        this.repository = repository;
-        this.objectMapper = objectMapper;
-        this.auditService = auditService;
-    }
 
     @Transactional
     public ApprovalRequest createApprovalRequest(String workflowId, String runId, String stepRunId, String stepName,

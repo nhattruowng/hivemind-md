@@ -16,15 +16,13 @@ import com.bizflow.workflow.dto.WorkflowStepRunResponse;
 import com.bizflow.workflow.dto.WorkflowVersionResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class WorkflowMapper {
     private final ObjectMapper objectMapper;
-
-    public WorkflowMapper(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     public WorkflowResponse toResponse(Workflow workflow) {
         return new WorkflowResponse(

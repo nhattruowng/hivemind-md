@@ -1,6 +1,8 @@
 spring:
   application:
     name: bizflow-local-agent
+  main:
+    web-application-type: reactive
   datasource:
     url: jdbc:sqlite:${BIZFLOW_DB_PATH:./data/bizflow.db}
     driver-class-name: org.sqlite.JDBC

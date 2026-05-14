@@ -1,12 +1,13 @@
 package com.bizflow.workflow.controller;
 
+import com.bizflow.common.reactive.BlockingJpaBridge;
 import com.bizflow.workflow.dto.ScheduleRequest;
 import com.bizflow.workflow.dto.ScheduleResponse;
 import com.bizflow.workflow.mapper.WorkflowMapper;
 import com.bizflow.workflow.repository.WorkflowScheduleRepository;
 import com.bizflow.workflow.service.WorkflowScheduler;
 import jakarta.validation.Valid;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,39 +18,45 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/workflows")
+@RequiredArgsConstructor
 public class WorkflowScheduleController {
     private final WorkflowScheduler scheduler;
     private final WorkflowScheduleRepository repository;
     private final WorkflowMapper mapper;
-
-    public WorkflowScheduleController(WorkflowScheduler scheduler, WorkflowScheduleRepository repository, WorkflowMapper mapper) {
-        this.scheduler = scheduler;
-        this.repository = repository;
-        this.mapper = mapper;
-    }
+    private final BlockingJpaBridge blockingJpa;
 
     @PostMapping("/{workflowId}/schedule")
-    public ScheduleResponse create(@PathVariable String workflowId, @Valid @RequestBody ScheduleRequest request) {
-        return mapper.toResponse(scheduler.registerSchedule(workflowId, request));
+    public Mono<ScheduleResponse> create(
+            @PathVariable String workflowId,
+            @Valid @RequestBody ScheduleRequest request
+    ) {
+        return blockingJpa.mono(() -> mapper.toResponse(scheduler.registerSchedule(workflowId, request)));
     }
 
     @PutMapping("/{workflowId}/schedule")
-    public ScheduleResponse update(@PathVariable String workflowId, @Valid @RequestBody ScheduleRequest request) {
-        repository.findByWorkflowId(workflowId).forEach(repository::delete);
-        return mapper.toResponse(scheduler.registerSchedule(workflowId, request));
+    public Mono<ScheduleResponse> update(
+            @PathVariable String workflowId,
+            @Valid @RequestBody ScheduleRequest request
+    ) {
+        return blockingJpa.mono(() -> {
+            repository.findByWorkflowId(workflowId).forEach(repository::delete);
+            return mapper.toResponse(scheduler.registerSchedule(workflowId, request));
+        });
     }
 
     @DeleteMapping("/{workflowId}/schedule")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable String workflowId) {
-        repository.findByWorkflowId(workflowId).forEach(repository::delete);
+    public Mono<Void> delete(@PathVariable String workflowId) {
+        return blockingJpa.run(() -> repository.findByWorkflowId(workflowId).forEach(repository::delete));
     }
 
     @GetMapping("/schedules")
-    public List<ScheduleResponse> list() {
-        return scheduler.listSchedules().stream().map(mapper::toResponse).toList();
+    public Flux<ScheduleResponse> list() {
+        return blockingJpa.flux(() -> scheduler.listSchedules().stream().map(mapper::toResponse).toList());
     }
 }

@@ -2,46 +2,56 @@ package com.bizflow.workflow.controller;
 
 import com.bizflow.approvals.domain.ApprovalRequest;
 import com.bizflow.approvals.service.ApprovalService;
+import com.bizflow.common.reactive.BlockingJpaBridge;
 import com.bizflow.workflow.dto.ApprovalDecisionRequest;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/approvals")
+@RequiredArgsConstructor
 public class WorkflowApprovalController {
     private final ApprovalService approvalService;
-
-    public WorkflowApprovalController(ApprovalService approvalService) {
-        this.approvalService = approvalService;
-    }
+    private final BlockingJpaBridge blockingJpa;
 
     @GetMapping
-    public List<ApprovalRequest> listPending() {
-        return approvalService.listPending();
+    public Flux<ApprovalRequest> listPending() {
+        return blockingJpa.flux(approvalService::listPending);
     }
 
     @GetMapping("/{approvalId}")
-    public ApprovalRequest get(@PathVariable String approvalId) {
-        return approvalService.get(approvalId);
+    public Mono<ApprovalRequest> get(@PathVariable String approvalId) {
+        return blockingJpa.mono(() -> approvalService.get(approvalId));
     }
 
     @PostMapping("/{approvalId}/approve")
-    public ApprovalRequest approve(@PathVariable String approvalId, @RequestBody(required = false) ApprovalDecisionRequest request) {
-        return approvalService.approve(approvalId, request);
+    public Mono<ApprovalRequest> approve(
+            @PathVariable String approvalId,
+            @RequestBody(required = false) ApprovalDecisionRequest request
+    ) {
+        return blockingJpa.mono(() -> approvalService.approve(approvalId, request));
     }
 
     @PostMapping("/{approvalId}/reject")
-    public ApprovalRequest reject(@PathVariable String approvalId, @RequestBody(required = false) ApprovalDecisionRequest request) {
-        return approvalService.reject(approvalId, request);
+    public Mono<ApprovalRequest> reject(
+            @PathVariable String approvalId,
+            @RequestBody(required = false) ApprovalDecisionRequest request
+    ) {
+        return blockingJpa.mono(() -> approvalService.reject(approvalId, request));
     }
 
     @PostMapping("/{approvalId}/modify-and-approve")
-    public ApprovalRequest modifyAndApprove(@PathVariable String approvalId, @RequestBody ApprovalDecisionRequest request) {
-        return approvalService.modifyAndApprove(approvalId, request);
+    public Mono<ApprovalRequest> modifyAndApprove(
+            @PathVariable String approvalId,
+            @RequestBody ApprovalDecisionRequest request
+    ) {
+        return blockingJpa.mono(() -> approvalService.modifyAndApprove(approvalId, request));
     }
 }

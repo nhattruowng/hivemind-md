@@ -15,23 +15,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class RollbackManager {
     private final WorkflowRunRepository runRepository;
     private final WorkflowStepRunRepository stepRunRepository;
     private final RollbackActionRepository rollbackActionRepository;
     private final WorkflowAuditService auditService;
-
-    public RollbackManager(WorkflowRunRepository runRepository, WorkflowStepRunRepository stepRunRepository,
-                           RollbackActionRepository rollbackActionRepository, WorkflowAuditService auditService) {
-        this.runRepository = runRepository;
-        this.stepRunRepository = stepRunRepository;
-        this.rollbackActionRepository = rollbackActionRepository;
-        this.auditService = auditService;
-    }
 
     @Transactional
     public WorkflowRun rollbackRun(String runId) {

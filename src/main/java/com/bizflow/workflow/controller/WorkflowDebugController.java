@@ -1,55 +1,56 @@
 package com.bizflow.workflow.controller;
 
+import com.bizflow.common.reactive.BlockingJpaBridge;
 import com.bizflow.workflow.dto.ReplayStepRequest;
 import com.bizflow.workflow.dto.WorkflowRunResponse;
 import com.bizflow.workflow.dto.WorkflowStepRunResponse;
 import com.bizflow.workflow.mapper.WorkflowMapper;
 import com.bizflow.workflow.repository.WorkflowStepRunRepository;
 import com.bizflow.workflow.service.WorkflowReplayService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/workflows/runs/{runId}/steps")
+@RequiredArgsConstructor
 public class WorkflowDebugController {
     private final WorkflowStepRunRepository stepRunRepository;
     private final WorkflowReplayService replayService;
     private final WorkflowMapper mapper;
-
-    public WorkflowDebugController(WorkflowStepRunRepository stepRunRepository, WorkflowReplayService replayService,
-                                   WorkflowMapper mapper) {
-        this.stepRunRepository = stepRunRepository;
-        this.replayService = replayService;
-        this.mapper = mapper;
-    }
+    private final BlockingJpaBridge blockingJpa;
 
     @GetMapping("/{stepRunId}")
-    public WorkflowStepRunResponse getStep(@PathVariable String stepRunId) {
-        return mapper.toResponse(stepRunRepository.findById(stepRunId)
-                .orElseThrow(() -> new IllegalArgumentException("Step run not found: " + stepRunId)));
+    public Mono<WorkflowStepRunResponse> getStep(@PathVariable String stepRunId) {
+        return blockingJpa.mono(() -> mapper.toResponse(stepRunRepository.findById(stepRunId)
+                .orElseThrow(() -> new IllegalArgumentException("Step run not found: " + stepRunId))));
     }
 
     @GetMapping("/{stepRunId}/input")
-    public Object getStepInput(@PathVariable String stepRunId) {
-        return stepRunRepository.findById(stepRunId)
+    public Mono<String> getStepInput(@PathVariable String stepRunId) {
+        return blockingJpa.mono(() -> stepRunRepository.findById(stepRunId)
                 .orElseThrow(() -> new IllegalArgumentException("Step run not found: " + stepRunId))
-                .getRedactedInputJson();
+                .getRedactedInputJson());
     }
 
     @GetMapping("/{stepRunId}/output")
-    public Object getStepOutput(@PathVariable String stepRunId) {
-        return stepRunRepository.findById(stepRunId)
+    public Mono<String> getStepOutput(@PathVariable String stepRunId) {
+        return blockingJpa.mono(() -> stepRunRepository.findById(stepRunId)
                 .orElseThrow(() -> new IllegalArgumentException("Step run not found: " + stepRunId))
-                .getRedactedOutputJson();
+                .getRedactedOutputJson());
     }
 
     @PostMapping("/{stepRunId}/replay")
-    public WorkflowRunResponse replay(@PathVariable String runId, @PathVariable String stepRunId,
-                                      @RequestBody(required = false) ReplayStepRequest request) {
-        return mapper.toResponse(replayService.replayFromStep(runId, stepRunId, request));
+    public Mono<WorkflowRunResponse> replay(
+            @PathVariable String runId,
+            @PathVariable String stepRunId,
+            @RequestBody(required = false) ReplayStepRequest request
+    ) {
+        return blockingJpa.mono(() -> mapper.toResponse(replayService.replayFromStep(runId, stepRunId, request)));
     }
 }

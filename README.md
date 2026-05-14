@@ -19,7 +19,7 @@ HiveMind MD là một hệ thống quản lý tri thức Markdown chạy local-f
 |---|---|---|
 | HiveMind backend | `backend/` | FastAPI backend hiện có: knowledge ingestion, vector search, agent orchestration, Ollama |
 | HiveMind frontend | `frontend/` | React/Vite UI hiện có cho knowledge, chat, agent monitor |
-| BizFlow Java core | `pom.xml`, `src/main/java/com/bizflow` | Spring Boot 3 / Java 21 scaffold cho agent runtime, workflow, approval, permission, tool, audit |
+| BizFlow Java core | `pom.xml`, `src/main/java/com/bizflow` | Spring Boot 3 WebFlux / Java 21 scaffold cho agent runtime, workflow, approval, permission, tool, audit |
 | BizFlow migrations | `src/main/resources/db/migration` | Flyway SQLite schema cho Agent Runtime và Workflow Engine |
 | BizFlow desktop UI | `apps/desktop` | React + TypeScript + Tailwind prototype, ưu tiên Workflow Builder |
 | Tài liệu | `docs/` | Hướng dẫn setup/run, kiến trúc UI, Workflow Engine, roadmap |
@@ -75,6 +75,8 @@ $env:JAVA_HOME='C:\Program Files\Java\jdk-21'
 mvn test
 mvn spring-boot:run
 ```
+
+BizFlow Java core dùng Spring WebFlux ở API layer. Persistence hiện vẫn dùng SQLite JDBC/JPA blocking và được bọc qua bounded elastic scheduler để không chiếm Netty event-loop.
 
 Mặc định backend BizFlow dự kiến chạy tại:
 

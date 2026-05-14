@@ -16,23 +16,17 @@ import com.bizflow.workflow.repository.WorkflowStepRunRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class StepExecutor {
     private final WorkflowStepRunRepository stepRunRepository;
     private final ApprovalService approvalService;
     private final WorkflowAuditService auditService;
     private final ObjectMapper objectMapper;
-
-    public StepExecutor(WorkflowStepRunRepository stepRunRepository, ApprovalService approvalService,
-                        WorkflowAuditService auditService, ObjectMapper objectMapper) {
-        this.stepRunRepository = stepRunRepository;
-        this.approvalService = approvalService;
-        this.auditService = auditService;
-        this.objectMapper = objectMapper;
-    }
 
     @Transactional
     public WorkflowStepRun executeStep(String runId, WorkflowStep step, String workflowId) {
