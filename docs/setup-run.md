@@ -22,6 +22,28 @@ git clone https://github.com/nhattruowng/hivemind-md.git
 cd hivemind-md
 ```
 
+## 2.1. Chạy Một Lệnh Cho Toàn Bộ Dev Stack
+
+Ở thư mục root repo, copy và dán:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\dev-all.ps1
+```
+
+Lệnh này tự xử lý Maven nếu máy chưa có `mvn`, tạo Python venv, cài frontend dependencies, rồi chạy:
+
+| Service | URL | Log |
+|---|---|---|
+| HiveMind FastAPI backend | `http://127.0.0.1:8000` | `logs/dev/hivemind-backend.log` |
+| BizFlow Java backend | `http://127.0.0.1:8787` | `logs/dev/bizflow-backend.log` |
+| HiveMind frontend | `http://127.0.0.1:5173` | `logs/dev/frontend.log` |
+
+Dừng tất cả:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\stop-all.ps1
+```
+
 ## 3. Chạy HiveMind MD Backend
 
 Backend HiveMind dùng FastAPI, SQLite, vector store và Ollama.

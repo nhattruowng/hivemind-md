@@ -63,6 +63,31 @@ Docker, nếu muốn chạy nguyên stack:
 docker compose up --build
 ```
 
+## 3.1. Chạy Một Lệnh Cho Toàn Bộ Dev Stack
+
+Copy và dán đúng một lệnh này ở thư mục root repo:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\dev-all.ps1
+```
+
+Script sẽ tự:
+
+- tìm Java/JDK;
+- dùng Maven trong PATH hoặc tự tải Maven vào `.tooling`;
+- tạo/cập nhật Python venv cho `backend`;
+- chạy `npm install` cho `frontend`;
+- start HiveMind FastAPI backend tại `http://127.0.0.1:8000`;
+- start BizFlow Java backend tại `http://127.0.0.1:8787`;
+- start frontend tại `http://127.0.0.1:5173`;
+- ghi log vào `logs/dev`.
+
+Dừng tất cả service:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\stop-all.ps1
+```
+
 ## 4. Chạy Nhanh BizFlow Java Core
 
 Yêu cầu:

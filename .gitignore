@@ -50,6 +50,7 @@ apps/desktop/dist/
 # Local runtime data
 data/
 logs/
+.dev/
 *.db
 *.db-wal
 *.db-shm
