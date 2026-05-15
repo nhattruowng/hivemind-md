@@ -76,10 +76,10 @@ Script sẽ tự:
 - tìm Java/JDK;
 - dùng Maven trong PATH hoặc tự tải Maven vào `.tooling`;
 - tạo/cập nhật Python venv cho `backend`;
-- chạy `npm install` cho `frontend`;
+- chạy `npm install` cho `apps/desktop`;
 - start HiveMind FastAPI backend tại `http://127.0.0.1:8000`;
 - start BizFlow Java backend tại `http://127.0.0.1:8787`;
-- start frontend tại `http://127.0.0.1:5173`;
+- start BizFlow Desktop UI tại `http://127.0.0.1:5173`;
 - ghi log vào `logs/dev`.
 
 Dừng tất cả service:
@@ -87,6 +87,8 @@ Dừng tất cả service:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\stop-all.ps1
 ```
+
+Lưu ý: terminal chạy `dev-all.ps1` nên được giữ mở trong lúc dev stack đang chạy. Nếu muốn script trả quyền điều khiển ngay sau khi start process, thêm `-NoWait`.
 
 ## 4. Chạy Nhanh BizFlow Java Core
 

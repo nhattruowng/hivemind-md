@@ -72,7 +72,7 @@ export const useWorkflowBuilderStore = create<WorkflowBuilderState>((set, get) =
       return { definition: { ...state.definition, steps }, nodes };
     });
   },
-  onNodesChange: (changes) => set({ nodes: applyNodeChanges(changes, get().nodes) as WorkflowFlowNode[] }),
+  onNodesChange: (changes) => set({ nodes: applyNodeChanges(changes, get().nodes) as unknown as WorkflowFlowNode[] }),
   onEdgesChange: (changes) => set({ edges: applyEdgeChanges(changes, get().edges) }),
   onConnect: (connection) => {
     set((state) => {

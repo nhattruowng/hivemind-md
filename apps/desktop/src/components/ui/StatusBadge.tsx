@@ -13,5 +13,5 @@ export function StatusBadge({ status }: { status: string }) {
           ? 'border-emerald-500/50 bg-emerald-500/10 text-emerald-200'
           : 'border-line bg-panel2 text-muted';
 
-  return <Badge className={cn('capitalize', className)}>{status.replaceAll('_', ' ')}</Badge>;
+  return <Badge className={cn('capitalize', className)}>{status.replace(/_/g, ' ')}</Badge>;
 }

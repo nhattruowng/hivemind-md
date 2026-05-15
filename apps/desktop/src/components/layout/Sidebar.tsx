@@ -14,24 +14,29 @@ import {
   Wrench
 } from 'lucide-react';
 
+import type { AppPage } from '@/stores/ui.store';
+import { useUiStore } from '@/stores/ui.store';
 import { cn } from '@/utils/cn';
 
 const navItems = [
-  { label: 'Dashboard', icon: Home, active: false },
-  { label: 'Chat', icon: Bot, active: false },
-  { label: 'Memory', icon: Brain, active: false },
-  { label: 'Tools', icon: Wrench, active: false },
-  { label: 'Permissions', icon: Shield, active: false },
-  { label: 'Approvals', icon: CheckSquare, active: false },
-  { label: 'Workflows', icon: GitBranch, active: true },
-  { label: 'Agent Studio', icon: SlidersHorizontal, active: false },
-  { label: 'Models', icon: Database, active: false },
-  { label: 'Connectors', icon: Cable, active: false },
-  { label: 'Audit Log', icon: Activity, active: false },
-  { label: 'Settings', icon: Settings, active: false }
-];
+  { id: 'dashboard', label: 'Dashboard', icon: Home },
+  { id: 'chat', label: 'Chat', icon: Bot },
+  { id: 'memory', label: 'Memory Map', icon: Brain },
+  { id: 'tools', label: 'Tool Manager', icon: Wrench },
+  { id: 'permissions', label: 'Permissions', icon: Shield },
+  { id: 'approvals', label: 'Approval Inbox', icon: CheckSquare },
+  { id: 'workflows', label: 'Workflow Builder', icon: GitBranch },
+  { id: 'agent-studio', label: 'Agent Studio', icon: SlidersHorizontal },
+  { id: 'models', label: 'Models', icon: Database },
+  { id: 'connectors', label: 'Connectors', icon: Cable },
+  { id: 'audit', label: 'Audit Log', icon: Activity },
+  { id: 'settings', label: 'Settings', icon: Settings }
+] satisfies Array<{ id: AppPage; label: string; icon: typeof Home }>;
 
 export function Sidebar() {
+  const activePage = useUiStore((state) => state.activePage);
+  const setActivePage = useUiStore((state) => state.setActivePage);
+
   return (
     <aside className="row-span-3 flex min-h-0 flex-col border-r border-line bg-panel">
       <div className="flex h-14 items-center gap-3 border-b border-line px-4">
@@ -47,9 +52,10 @@ export function Sidebar() {
         {navItems.map((item) => (
           <button
             key={item.label}
+            onClick={() => setActivePage(item.id)}
             className={cn(
               'flex w-full items-center gap-3 rounded-ui px-3 py-2 text-left text-sm transition',
-              item.active ? 'bg-sky-500/15 text-sky-100' : 'text-muted hover:bg-panel2 hover:text-text'
+              activePage === item.id ? 'bg-sky-500/15 text-sky-100' : 'text-muted hover:bg-panel2 hover:text-text'
             )}
           >
             <item.icon className="h-4 w-4" />

@@ -18,3 +18,16 @@ Get-ChildItem -Path $DevDir -Filter "*.pid" | ForEach-Object {
     }
     Remove-Item $_.FullName -Force
 }
+
+foreach ($port in 5173, 8000, 8787) {
+    netstat -ano | Select-String ":$port\s+" | ForEach-Object {
+        $parts = ($_.Line.Trim() -split '\s+')
+        if ($parts.Count -ge 5 -and $parts[1] -match ":$port$" -and $parts[3] -eq "LISTENING") {
+            $process = Get-Process -Id ([int]$parts[4])
+            if ($process -and $process.ProcessName -in @("node", "java", "python", "python3")) {
+                Stop-Process -Id $process.Id -Force
+                Write-Host "Đã dừng process trên port $port ($($process.ProcessName) $($process.Id))"
+            }
+        }
+    }
+}

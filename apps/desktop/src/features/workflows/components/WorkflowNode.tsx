@@ -5,7 +5,7 @@ import { RiskBadge } from '@/components/ui/RiskBadge';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { cn } from '@/utils/cn';
 
-import type { WorkflowNodeData, WorkflowStepType } from '../workflow.types';
+import type { WorkflowFlowNode, WorkflowStepType } from '../workflow.types';
 
 const icons: Record<WorkflowStepType, typeof Wrench> = {
   tool_call: Wrench,
@@ -21,7 +21,7 @@ const icons: Record<WorkflowStepType, typeof Wrench> = {
   sub_workflow: Network
 };
 
-export function WorkflowNode({ data, selected }: NodeProps<WorkflowNodeData>) {
+export function WorkflowNode({ data, selected }: NodeProps<WorkflowFlowNode>) {
   const Icon = icons[data.step.type];
 
   return (
@@ -39,7 +39,7 @@ export function WorkflowNode({ data, selected }: NodeProps<WorkflowNodeData>) {
           </div>
           <div className="min-w-0">
             <div className="truncate text-sm font-semibold text-text">{data.step.name}</div>
-            <div className="text-xs text-muted">{data.step.type.replaceAll('_', ' ')}</div>
+            <div className="text-xs text-muted">{data.step.type.replace(/_/g, ' ')}</div>
           </div>
         </div>
       </div>

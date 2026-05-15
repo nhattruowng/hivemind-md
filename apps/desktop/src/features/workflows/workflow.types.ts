@@ -121,7 +121,7 @@ export interface WorkflowAuditEvent {
   createdAt: string;
 }
 
-export interface WorkflowNodeData {
+export interface WorkflowNodeData extends Record<string, unknown> {
   step: WorkflowStep;
   selected?: boolean;
 }

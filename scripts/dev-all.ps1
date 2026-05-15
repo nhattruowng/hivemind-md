@@ -1,6 +1,7 @@
 param(
     [switch]$SkipInstall,
-    [switch]$NoDownload
+    [switch]$NoDownload,
+    [switch]$NoWait
 )
 
 $ErrorActionPreference = "Stop"
@@ -12,7 +13,7 @@ $MavenVersion = "3.9.6"
 $MavenDir = Join-Path $Root ".tooling\apache-maven-$MavenVersion"
 $MavenZip = Join-Path $Root ".tooling\apache-maven-$MavenVersion-bin.zip"
 $MavenCmd = Join-Path $MavenDir "bin\mvn.cmd"
-$FrontendDir = Join-Path $Root "frontend"
+$FrontendDir = Join-Path $Root "apps\desktop"
 $PythonBackendDir = Join-Path $Root "backend"
 $PythonVenvPython = Join-Path $PythonBackendDir ".venv\Scripts\python.exe"
 
@@ -137,6 +138,27 @@ function Stop-ExistingDevProcess {
     Remove-Item $pidFile -Force -ErrorAction SilentlyContinue
 }
 
+function Stop-PortProcess {
+    param([int]$Port)
+
+    $pids = @()
+    $netstat = netstat -ano | Select-String ":$Port\s+"
+    foreach ($line in $netstat) {
+        $parts = ($line.Line.Trim() -split '\s+')
+        if ($parts.Count -ge 5 -and $parts[1] -match ":$Port$" -and $parts[3] -eq "LISTENING") {
+            $pids += [int]$parts[4]
+        }
+    }
+
+    foreach ($pidValue in ($pids | Sort-Object -Unique)) {
+        $process = Get-Process -Id $pidValue -ErrorAction SilentlyContinue
+        if ($process) {
+            Write-Step "Port $Port đang bận bởi $($process.ProcessName) ($($process.Id)), dừng để chạy dev stack"
+            Stop-Process -Id $process.Id -Force
+        }
+    }
+}
+
 function Start-DevProcess {
     param(
         [string]$Name,
@@ -181,7 +203,7 @@ if (!$SkipInstall) {
     & $PythonVenvPython -m pip install -r requirements.txt
     Pop-Location
 
-    Write-Step "Cài/cập nhật frontend dependencies"
+    Write-Step "Cài/cập nhật BizFlow desktop UI dependencies"
     Push-Location $FrontendDir
     & $Npm install
     Pop-Location
@@ -225,7 +247,7 @@ try {
 @"
 `$ErrorActionPreference = "Stop"
 New-Item -ItemType Directory -Force -Path "$LogDir" | Out-Null
-"Starting frontend at http://127.0.0.1:5173" | Tee-Object -FilePath "$FrontendLog"
+"Starting BizFlow desktop UI at http://127.0.0.1:5173" | Tee-Object -FilePath "$FrontendLog"
 try {
     Set-Location "$FrontendDir"
     `$env:VITE_API_BASE_URL = "http://127.0.0.1:8000"
@@ -237,6 +259,9 @@ try {
 "@ | Set-Content -Path $FrontendScript
 
 Write-Step "Start HiveMind backend + BizFlow backend + frontend"
+Stop-PortProcess -Port 8000
+Stop-PortProcess -Port 8787
+Stop-PortProcess -Port 5173
 Start-DevProcess -Name "hivemind-backend" -ScriptPath $HiveMindBackendScript
 Start-DevProcess -Name "bizflow-backend" -ScriptPath $BizFlowBackendScript
 Start-DevProcess -Name "frontend" -ScriptPath $FrontendScript
@@ -245,10 +270,36 @@ Write-Host ""
 Write-Host "Đã chạy tất cả service." -ForegroundColor Green
 Write-Host "HiveMind API:    http://127.0.0.1:8000"
 Write-Host "BizFlow API:     http://127.0.0.1:8787"
-Write-Host "Frontend:        http://127.0.0.1:5173"
+Write-Host "BizFlow Desktop: http://127.0.0.1:5173"
 Write-Host "HiveMind log:    $HiveMindBackendLog"
 Write-Host "BizFlow log:     $BizFlowBackendLog"
 Write-Host "Frontend log:    $FrontendLog"
 Write-Host ""
 Write-Host "Dừng tất cả:"
 Write-Host "powershell -ExecutionPolicy Bypass -File .\scripts\stop-all.ps1"
+
+if (!$NoWait) {
+    Write-Host ""
+    Write-Host "Giữ terminal này mở để dev stack tiếp tục chạy. Nhấn Ctrl+C để thoát, rồi chạy stop-all nếu cần." -ForegroundColor Yellow
+    try {
+        while ($true) {
+            Start-Sleep -Seconds 3
+            $alive = @()
+            foreach ($name in "hivemind-backend", "bizflow-backend", "frontend") {
+                $pidFile = Join-Path $DevDir "$name.pid"
+                if (Test-Path $pidFile) {
+                    $pidValue = Get-Content $pidFile
+                    if (Get-Process -Id $pidValue -ErrorAction SilentlyContinue) {
+                        $alive += $name
+                    }
+                }
+            }
+            if ($alive.Count -eq 0) {
+                Write-Host "Tất cả service đã dừng. Xem logs/dev để biết lỗi." -ForegroundColor Red
+                break
+            }
+        }
+    } finally {
+        Write-Host "Dev launcher kết thúc. Các process có thể được dừng bằng scripts\stop-all.ps1."
+    }
+}
