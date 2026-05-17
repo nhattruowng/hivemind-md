@@ -6,4 +6,4 @@ python-dotenv==1.2.2
 httpx==0.28.1
 beautifulsoup4==4.14.3
 trafilatura==2.0.0
-ddgs==9.14.2
+ddgs==9.14.4
